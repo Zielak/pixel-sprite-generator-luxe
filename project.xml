@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="PixelSpriteGenerator" package="com.sample.project" version="1.0.0" company="Company Name" />
+	<app main="Main" path="export" file="PixelSpriteGenerator" />
+
+  <window width="1000" height="300" fps="30" background="#FFFFFF" hardware="true" vsync="true" />
+	
+	<source path="source" />
+	
+	<haxelib name="openfl" />
+	
+	<assets path="assets" rename="assets" exclude="openfl.svg" />
+	<!-- <icon path="assets/openfl.svg" /> -->
+	
+</project>

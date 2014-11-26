@@ -2,17 +2,19 @@
 package ;
 
 import openfl.display.BitmapData;
+import openfl.display.Bitmap;
 
-class Sprite 
+class Sprite
 {
 
   public var width:Int;
   public var height:Int;
-  public var data:Vector<Vector<Int>>;
+  public var data:Array<Int>;
   public var mask:Mask;
   public var isColored:Bool;
 
-  private var canvas:BitmapData;
+  private var _bitmapData:BitmapData;
+  public var bitmap:Bitmap;
 
 
   /**
@@ -28,7 +30,7 @@ class Sprite
     mask      = mask_;
     width     = mask.width * (mask.mirrorX ? 2 : 1);
     height    = mask.height * (mask.mirrorY ? 2 : 1);
-    data      = new Vector<Vector<Int>(width)>(height);
+    data      = new Array<Int>();
     isColored = isColored_;
 
     init();
@@ -42,8 +44,7 @@ class Sprite
   */
   private function init():Void
   {
-    initCanvas();
-    // initContext();
+    initBitmapdata();
     initData();
 
     applyMask();
@@ -59,20 +60,20 @@ class Sprite
 
     generateEdges();
     renderPixelData();
+
+    initBitmap();
   }
 
-  /**
-  *   The initCanvas method creates a HTML canvas element for internal use.
-  *
-  *   (note: the canvas element is not added to the DOM)
-  *
-  *   @method initCanvas
-  *   @returns {undefined}
-  */
-  private function initCanvas():Void
+
+  private function initBitmapdata():Void
   {
-    canvas = new BitmapData(width, height);
+    _bitmapData = new BitmapData(width, height);
   };
+
+  private function initBitmap():Void
+  {
+    bitmap = new Bitmap( _bitmapData, openfl.display.PixelSnapping.ALWAYS, false );
+  }
 
   /**
   *   The initContext method requests a CanvasRenderingContext2D from the
@@ -104,7 +105,7 @@ class Sprite
   */
   private function getData(x, y):Int
   {
-    return data[x][y];
+    return data[y * width + x];
   };
 
   /**
@@ -123,7 +124,7 @@ class Sprite
   */
   private function setData(x, y, value):Void
   {
-    data[x][y] = value;
+    data[y * width + x] = value;
   };
 
   /**
@@ -202,251 +203,243 @@ class Sprite
   */
   private function applyMask():Void
   {
-      var h = mask.height;
-      var w = mask.width;
+    var h:Int = mask.height;
+    var w:Int = mask.width;
+    var x:Int = 0;
+    var y:Int = 0;
 
-      var x, y;
-      for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-              this.setData(x, y, this.mask.data[y * w + x]);
-         }
+    for (y in 0...h)
+    {
+      for (x in 0...w)
+      {
+        setData(x, y, mask.data[y * w + x]);
       }
+    }
   };
 
-}
 
 
+  /**
+  *   Apply a random sample to the sprite template.
+  *
+  *   If the template contains a 1 (internal body part) at location (x, y), then
+  *   there is a 50% chance it will be turned empty. If there is a 2, then there
+  *   is a 50% chance it will be turned into a body or border.
+  *
+  *   (feel free to play with this logic for interesting results)
+  *
+  *   @method generateRandomSample
+  *   @returns {undefined}
+  */
+  private function generateRandomSample():Void
+  {
+    var h:Int = height;
+    var w:Int = width;
+    var x:Int = 0;
+    var y:Int = 0;
+    var val:Int = 0;
 
+    for (y in 0...h)
+    {
+      for (x in 0...w)
+      {
+        val = getData(x, y);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
-*   Apply a random sample to the sprite template.
-*
-*   If the template contains a 1 (internal body part) at location (x, y), then
-*   there is a 50% chance it will be turned empty. If there is a 2, then there
-*   is a 50% chance it will be turned into a body or border.
-*
-*   (feel free to play with this logic for interesting results)
-*
-*   @method generateRandomSample
-*   @returns {undefined}
-*/
-private function generateRandomSample():Void
-{
-    var h = this.height;
-    var w = this.width;
-
-    var x, y;
-    for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-            var val = this.getData(x, y);
-
-            if (val === 1) {
-                val = val * Math.round(Math.random());
-            } else if (val === 2) {
-                if (Math.random() > 0.5) {
-                    val = 1;
-                } else {
-                    val = -1;
-                }
-            } 
-
-            this.setData(x, y, val);
+        if (val == 1)
+        {
+          val = val * Math.round( Math.random() );
         }
+        else if (val == 2)
+        {
+          if (Math.random() > 0.5)
+          {
+            val = 1;
+          }
+          else
+          {
+            val = -1;
+          }
+        } 
+
+        setData(x, y, val);
+      }
     }
-};
+  };
 
-/**
-*   This method applies edges to any template location that is positive in
-*   value and is surrounded by empty (0) pixels.
-*
-*   @method generateEdges
-*   @returns {undefined}
-*/
-private function generateEdges():Void
-{
-    var h = this.height;
-    var w = this.width;
 
-    var x, y;
-    for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-            if (this.getData(x, y) > 0) {
-                if (y - 1 >= 0 && this.getData(x, y-1) === 0) {
-                    this.setData(x, y-1, -1);
-                }
-                if (y + 1 < this.height && this.getData(x, y+1) === 0) {
-                    this.setData(x, y+1, -1);
-                }
-                if (x - 1 >= 0 && this.getData(x-1, y) === 0) {
-                    this.setData(x-1, y, -1);
-                }
-                if (x + 1 < this.width && this.getData(x+1, y) === 0) {
-                    this.setData(x+1, y, -1);
-                }
-            }
+  /**
+  *   This method applies edges to any template location that is positive in
+  *   value and is surrounded by empty (0) pixels.
+  *
+  *   @method generateEdges
+  *   @returns {undefined}
+  */
+  private function generateEdges():Void
+  {
+    var h:Int = height;
+    var w:Int = width;
+    var x:Int = 0;
+    var y:Int = 0;
+
+    for (y in 0...h)
+    {
+      for (x in 0...w)
+      {
+        if (getData(x, y) > 0)
+        {
+          if (y - 1 >= 0 && getData(x, y-1) == 0)
+          {
+            setData(x, y-1, -1);
+          }
+          if (y + 1 < height && getData(x, y+1) == 0)
+          {
+            setData(x, y+1, -1);
+          }
+          if (x - 1 >= 0 && getData(x-1, y) == 0)
+          {
+            setData(x-1, y, -1);
+          }
+          if (x + 1 < width && getData(x+1, y) == 0)
+          {
+            setData(x+1, y, -1);
+          }
         }
+      }
     }
-};
+  };
 
-/**
-*   This method renders out the template data to a HTML canvas to finally
-*   create the sprite.
-*
-*   (note: only template locations with the values of -1 (border) are rendered)
-*
-*   @method renderPixelData
-*   @returns {undefined}
-*/
-private function renderPixelData():Void
-{
-    var isVerticalGradient = Math.random() > 0.5;
-    var saturation         = Math.random() * 0.5;
-    var hue                = Math.random();
+  /**
+  *   This method renders out the template data to a HTML canvas to finally
+  *   create the sprite.
+  *
+  *   (note: only template locations with the values of -1 (border) are rendered)
+  *
+  *   @method renderPixelData
+  *   @returns {undefined}
+  */
+  private function renderPixelData():Void
+  {
+    // Prepare all the variables first
+    var isVerticalGradient:Bool = Math.random() > 0.5;
+    var saturation:Float        = Math.random() * 0.5;
+    var hue:Float               = Math.random();
 
-    var u, v, ulen, vlen;
+    var u:Int = 0;
+    var v:Int = 0;
+    var ulen:Int = 0;
+    var vlen:Int = 0;
+
+    var isNewColor:Float = 0;
+
+    var val:Int = 0;
+    var index:Int = 0;
+
+    var color:Color = new Color(0,0,0);
+
+    var brightness:Float = 0;
+
     if (isVerticalGradient) {
-        ulen = this.height;
-        vlen = this.width;
+      ulen = height;
+      vlen = width;
     } else {
-        ulen = this.width;
-        vlen = this.height;
+      ulen = width;
+      vlen = height;
     }
 
-    for (u = 0; u < ulen; u++) {
-        // Create a non-uniform random number between 0 and 1 (lower numbers more likely)
-        var isNewColor = Math.abs(((Math.random() * 2 - 1) 
-                                 + (Math.random() * 2 - 1) 
-                                 + (Math.random() * 2 - 1)) / 3);
+    _bitmapData.lock();
 
-        // Only change the color sometimes (values above 0.8 are less likely than others)
-        if (isNewColor > 0.8) {
-            hue = Math.random();
+    for (u in 0...ulen) {
+      // Create a non-uniform random number between 0 and 1 (lower numbers more likely)
+      isNewColor = Math.abs(((Math.random() * 2 - 1) 
+                           + (Math.random() * 2 - 1) 
+                           + (Math.random() * 2 - 1)) / 3);
+
+      // Only change the color sometimes (values above 0.8 are less likely than others)
+      if (isNewColor > 0.8) {
+        hue = Math.random();
+      }
+
+      for (v in 0...vlen)
+      {
+        if (isVerticalGradient)
+        {
+          val   = getData(v, u);
+          index = (u * vlen + v) * 4;
+        }
+        else
+        {
+          val   = getData(u, v);
+          index = (v * ulen + u) * 4;
         }
 
-        for (v = 0; v < vlen; v++) {
-            var val, index;
-            if (isVerticalGradient) {
-                val   = this.getData(v, u);
-                index = (u * vlen + v) * 4;
-            } else {
-                val   = this.getData(u, v);
-                index = (v * ulen + u) * 4;
+        color.setRGB(1,1,1);
+
+        if (val != 0)
+        {
+          if (isColored)
+          {
+            // Fade brightness away towards the edges
+            brightness = Math.sin((u / ulen) * Math.PI) * 0.7 + Math.random() * 0.3;
+
+            // Get the RGB color value
+            color.setHSL(hue, saturation, brightness);
+
+            // If this is an edge, then darken the pixel
+            if (val == -1) {
+              color.r *= 0.3;
+              color.g *= 0.3;
+              color.b *= 0.3;
             }
 
-            var rgb = { r: 1, g: 1, b: 1 };
-
-            if (val !== 0) {
-                if (this.isColored) {
-                    // Fade brightness away towards the edges
-                    var brightness = Math.sin((u / ulen) * Math.PI) * 0.7 + Math.random() * 0.3;
-
-                    // Get the RGB color value
-                    this.hslToRgb(hue, saturation, brightness, /*out*/ rgb);
-
-                    // If this is an edge, then darken the pixel
-                    if (val === -1) {
-                        rgb.r *= 0.3;
-                        rgb.g *= 0.3;
-                        rgb.b *= 0.3;
-                    }
-
-                }  else {
-                    // Not colored, simply output black
-                    if (val === -1) {
-                        rgb.r = 0;
-                        rgb.g = 0;
-                        rgb.b = 0;
-                    }
-                }
+          }  else {
+            // Not colored, simply output black
+            if (val == -1) {
+              color.r = 0;
+              color.g = 0;
+              color.b = 0;
             }
-
-            this.pixels.data[index + 0] = rgb.r * 255;
-            this.pixels.data[index + 1] = rgb.g * 255;
-            this.pixels.data[index + 2] = rgb.b * 255;
-            this.pixels.data[index + 3] = 255;
+          }
         }
+
+        _bitmapData.setPixel( u, v, color.getRGB() );
+        // pixels.data[index + 0] = color.r * 255;
+        // pixels.data[index + 1] = color.g * 255;
+        // pixels.data[index + 2] = color.b * 255;
+        // pixels.data[index + 3] = 255;
+      }
     }
 
-    this.ctx.putImageData(this.pixels, 0, 0);
-};
+    _bitmapData.unlock();
+    // ctx.putImageData(pixels, 0, 0);
+  };
 
 
-/**
-*   This method converts HSL color values to RGB color values.
-*
-*   @method hslToRgb
-*   @param {h}
-*   @param {s}
-*   @param {l}
-*   @param {result}
-*   @returns {result}
-*/
-private function hslToRgb(h, s, l, result):Void
-{
-    if (typeof result === 'undefined') {
-        result = { r: 0, g: 0, b: 0 };
-    }
+  /**
+  *   This method converts the template data to a string value for debugging
+  *   purposes.
+  *
+  *   @method toString
+  *   @returns {undefined}
+  */
+  public function toString():String
+  {
+    var h:Int = height;
+    var w:Int = width;
+    var x:Int = 0;
+    var y:Int = 0;
+    var output:String = "";
 
-    var i, f, p, q, t;
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = l * (1 - s);
-    q = l * (1 - f * s);
-    t = l * (1 - (1 - f) * s);
-    
-    switch (i % 6) {
-        case 0: result.r = l, result.g = t, result.b = p; break;
-        case 1: result.r = q, result.g = l, result.b = p; break;
-        case 2: result.r = p, result.g = l, result.b = t; break;
-        case 3: result.r = p, result.g = q, result.b = l; break;
-        case 4: result.r = t, result.g = p, result.b = l; break;
-        case 5: result.r = l, result.g = p, result.b = q; break;
-    }
-
-    return result;
-}
-
-/**
-*   This method converts the template data to a string value for debugging
-*   purposes.
-*
-*   @method toString
-*   @returns {undefined}
-*/
-private function toString():Void
-{
-    var h = this.height;
-    var w = this.width;
-    var x, y, output = '';
-    for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-            var val = this.getData(x, y);
-            output += val >= 0 ? ' ' + val : '' + val;
-        }
-        output += '\n';
+    for (y in 0...h)
+    {
+      for (x in 0...w)
+      {
+        var val = getData(x, y);
+        output += (val >= 0) ? " " + val : "" + val;
+      }
+      output += "\n";
     }
     return output;
-};
+  };
+
+
+}
