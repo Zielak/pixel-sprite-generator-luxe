@@ -1,7 +1,7 @@
 pixel-sprite-generator
 ======================
 
-Haxe port of [https://github.com/zfedoran/pixel-sprite-generator](Pixel Sprite Generator) by zfedoran. 
+Haxe port of [Pixel Sprite Generator](https://github.com/zfedoran/pixel-sprite-generator) by zfedoran. 
 
 ##Live Example (swf)
 [http://zielak.pl/pub/github/pixel-sprite-generator/PixelSpriteGenerator.swf](http://zielak.pl/pub/github/pixel-sprite-generator/PixelSpriteGenerator.swf)
