@@ -1,5 +1,5 @@
 
-package ;
+package psg;
 
 class Mask 
 {

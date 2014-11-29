@@ -1,5 +1,5 @@
 
-package ;
+package psg;
 
 class Color 
 {
@@ -29,6 +29,10 @@ class Color
     b = b_;
   }
 
+  /**
+   * Get RGB color
+   * @return Int in format 0xRRGGBB
+   */
   public function getRGB():Int
   {
     var rgb:Int;

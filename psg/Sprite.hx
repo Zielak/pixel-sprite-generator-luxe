@@ -1,5 +1,5 @@
 
-package ;
+package psg;
 
 import openfl.display.BitmapData;
 import openfl.display.Bitmap;
@@ -10,38 +10,58 @@ class Sprite
   public var width:Int;
   public var height:Int;
   public var data:Array<Int>;
+
   public var mask:Mask;
+
   public var isColored:Bool;
+  public var edgeBrightness:Float;
+  public var colorVariations:Float;
+  public var brightnessNoise:Float;
+  public var saturation:Float;
 
   private var _bitmapData:BitmapData;
   public var bitmap:Bitmap;
 
 
   /**
-  *   The Sprite class makes use of a Mask instance to generate a 2D sprite on a
-  *   HTML canvas.
+  *   The Sprite class makes use of a Mask instance to generate a 2D sprite.
+  *
+  *       colored         : true,   // boolean
+  *       edgeBrightness  : 0.3,    // value from 0 to 1
+  *       colorVariations : 0.2,    // value from 0 to 1
+  *       brightnessNoise : 0.3,    // value from 0 to 1
+  *       saturation      : 0.5     // value from 0 to 1
   *
   *   @class Sprite
   *   @param {mask}
+  *   @param {options} 
   *   @constructor
   */
-  public function new( mask_:Mask, ?isColored_:Bool = true ):Void
+ 
+  public function new( mask_:Mask, ?isColored_:Bool = false,
+    ?edgeBrightness_:Float = 0.3, ?colorVariations_:Float = 0.2,
+    ?brightnessNoise_:Float = 0.3, ?saturation_:Float = 0.5
+  ):Void
   {
     mask      = mask_;
     width     = mask.width * (mask.mirrorX ? 2 : 1);
     height    = mask.height * (mask.mirrorY ? 2 : 1);
+
     data      = new Array<Int>();
-    isColored = isColored_;
+
+    isColored       = isColored_;
+    edgeBrightness  = edgeBrightness_;
+    colorVariations = colorVariations_;
+    brightnessNoise = brightnessNoise_;
+    saturation      = saturation_;
 
     init();
   }
 
+
   /**
-  *   The init method calls all functions required to generate the sprite.
-  *
-  *   @method init
-  *   @returns {undefined}
-  */
+   * The init method calls all functions required to generate the sprite.
+   */
   private function init():Void
   {
     initBitmapdata();
@@ -75,34 +95,19 @@ class Sprite
     bitmap = new Bitmap( _bitmapData, openfl.display.PixelSnapping.ALWAYS, false );
   }
 
+  
   /**
-  *   The initContext method requests a CanvasRenderingContext2D from the
-  *   internal canvas object.
-  *
-  *   @method 
-  *   @returns {undefined}
-  */
-  // Guess Haxe doesn't need it. - @Zielakpl
-  // private function initContext():Void
-  // {
-  //   this.ctx    = this.canvas.getContext('2d');
-  //   this.pixels = this.ctx.createImageData(this.width, this.height);
-  // };
-
-
-  /**
-  *   The getData method returns the sprite template data at location (x, y)
-  *
-  *      -1 = Always border (black)
-  *       0 = Empty
-  *       1 = Randomly chosen Empty/Body
-  *       2 = Randomly chosen Border/Body
-  *
-  *   @method getData
-  *   @param {x}
-  *   @param {y}
-  *   @returns {undefined}
-  */
+   * The getData method returns the sprite template data at location (x, y)
+   * 
+   *    -1 = Always border (black)
+   *     0 = Empty
+   *     1 = Randomly chosen Empty/Body
+   *     2 = Randomly chosen Border/Body
+   *     
+   * @param  x X position of pixel
+   * @param  y Y position of pixel
+   * @return   Value of pixel at position
+   */
   private function getData(x, y):Int
   {
     return data[y * width + x];
@@ -321,7 +326,7 @@ class Sprite
   {
     // Prepare all the variables first
     var isVerticalGradient:Bool = Math.random() > 0.5;
-    var saturation:Float        = Math.random() * 0.5;
+    var saturation:Float        = Math.max( Math.min( Math.random() * saturation, 1 ), 0);
     var hue:Float               = Math.random();
 
     var u:Int = 0;
@@ -355,7 +360,7 @@ class Sprite
                            + (Math.random() * 2 - 1)) / 3);
 
       // Only change the color sometimes (values above 0.8 are less likely than others)
-      if (isNewColor > 0.8) {
+      if (isNewColor > (1 - colorVariations)) {
         hue = Math.random();
       }
 
@@ -379,16 +384,17 @@ class Sprite
           if (isColored)
           {
             // Fade brightness away towards the edges
-            brightness = Math.sin((u / ulen) * Math.PI) * 0.7 + Math.random() * 0.3;
+            brightness = Math.sin((u / ulen) * Math.PI) * (1 - brightnessNoise) 
+                                   + Math.random() * brightnessNoise;
 
             // Get the RGB color value
             color.setHSL(hue, saturation, brightness);
 
             // If this is an edge, then darken the pixel
             if (val == -1) {
-              color.r *= 0.3;
-              color.g *= 0.3;
-              color.b *= 0.3;
+              color.r *= edgeBrightness;
+              color.g *= edgeBrightness;
+              color.b *= edgeBrightness;
             }
 
           }  else {
@@ -402,15 +408,10 @@ class Sprite
         }
 
         _bitmapData.setPixel( u, v, color.getRGB() );
-        // pixels.data[index + 0] = color.r * 255;
-        // pixels.data[index + 1] = color.g * 255;
-        // pixels.data[index + 2] = color.b * 255;
-        // pixels.data[index + 3] = 255;
       }
     }
 
     _bitmapData.unlock();
-    // ctx.putImageData(pixels, 0, 0);
   };
 
 
