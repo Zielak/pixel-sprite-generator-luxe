@@ -22,13 +22,14 @@ import openfl.text.TextField;
 class Main extends openfl.display.Sprite {
   
   private var spaceship:psg.Mask;
+  private var humanoid:psg.Mask;
   private var dragon:psg.Mask;
   private var robot:psg.Mask;
 
-  private var SPRITE_COUNT:Int = 116;
-  private var SPRITE_XMAX:Int = 980;
+  private var SPRITE_COUNT:Int = 40; //116;
+  private var SPRITE_XMAX:Int = 960;
   private var SPRITE_SPACING:Int = 10;
-  private var SPRITE_SCALE:Float = 2;
+  private var SPRITE_SCALE:Float = 3;
   
   private var sprite:psg.Sprite;
   private var _y:Int;
@@ -38,8 +39,6 @@ class Main extends openfl.display.Sprite {
   public function new () {
     
     super ();
-
-
     
     spaceship = new psg.Mask([
       0, 0, 0, 0, 0, 0,
@@ -55,6 +54,23 @@ class Main extends openfl.display.Sprite {
       0, 0, 0, 1, 1, 1,
       0, 0, 0, 0, 0, 0
     ], 6, 12, true, false);
+
+    humanoid = new psg.Mask([
+      0, 0, 0, 0, 1, 1, 1, 1,
+      0, 0, 0, 0, 1, 1, 2,-1,
+      0, 0, 0, 0, 1, 1, 2,-1,
+      0, 0, 0, 0, 0, 0, 2,-1,
+      0, 0, 1, 1, 1, 1, 2,-1,
+      0, 1, 1, 2, 2, 1, 2,-1,
+      0, 0, 1, 1, 0, 1, 1, 2,
+      0, 0, 0, 0, 1, 1, 1, 2,
+      0, 0, 0, 0, 1, 1, 1, 2,
+      0, 0, 0, 0, 1, 1, 0, 0,
+      0, 0, 0, 1, 1, 1, 0, 0,
+      0, 0, 0, 1, 2, 1, 0, 0,
+      0, 0, 0, 1, 2, 1, 0, 0,
+      0, 0, 0, 1, 2, 2, 0, 0
+    ], 8, 14, true, false);
 
     dragon = new psg.Mask([
       0,0,0,0,0,0,0,0,0,0,0,0,
@@ -113,11 +129,11 @@ class Main extends openfl.display.Sprite {
 
     // Example 2
 
-    placeTextField( "Colored ship sprites (with low saturation)");
+    placeTextField( "Colored humanoids (with low saturation)");
 
     for (i in 0...SPRITE_COUNT)
     {
-      sprite = new psg.Sprite(spaceship, true, null, null, null, 0.1);
+      sprite = new psg.Sprite(humanoid, true, null, null, null, 0.1);
       placeSprite( sprite );
     }
     prepareForNextExample();
@@ -208,7 +224,7 @@ class Main extends openfl.display.Sprite {
   private function prepareForNextExample():Void
   {
     _x = SPRITE_SPACING;
-    _y += 40;
+    _y += 50;
   }
   
   
