@@ -4,7 +4,7 @@
 	<meta title="PixelSpriteGenerator" package="com.sample.project" version="1.0.0" company="Company Name" />
 	<app main="Main" path="export" file="PixelSpriteGenerator" />
 
-  <window width="1000" height="900" fps="30" background="#FFFFFF" hardware="true" vsync="true" />
+  <window width="728" height="900" fps="30" background="#FFFFFF" hardware="true" vsync="true" />
 	
 	<source path="source" />
 	

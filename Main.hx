@@ -27,7 +27,7 @@ class Main extends openfl.display.Sprite {
   private var robot:psg.Mask;
 
   private var SPRITE_COUNT:Int = 40; //116;
-  private var SPRITE_XMAX:Int = 960;
+  private var SPRITE_XMAX:Int = 700;
   private var SPRITE_SPACING:Int = 10;
   private var SPRITE_SCALE:Float = 3;
   
