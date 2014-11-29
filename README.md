@@ -10,7 +10,9 @@ Haxe port of [Pixel Sprite Generator](https://github.com/zfedoran/pixel-sprite-g
 
 ###Using Haxelib
 
-TODO
+```
+haxelib install pixel-sprite-generator
+```
 
 ##Algorithm
 
