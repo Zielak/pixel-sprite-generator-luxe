@@ -9,6 +9,8 @@ Haxe port of [Pixel Sprite Generator](https://github.com/zfedoran/pixel-sprite-g
 
 **HTML/JS** - [http://zielak.pl/pub/github/pixel-sprite-generator/](http://zielak.pl/pub/github/pixel-sprite-generator/)
 
+<img src="https://raw.githubusercontent.com/Zielak/pixel-sprite-generator/master/doc/screenshot.png">
+
 ##Installation
 
 ###Using Haxelib
