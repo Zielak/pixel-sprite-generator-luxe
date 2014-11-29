@@ -140,12 +140,14 @@ class Sprite
   */
   private function initData():Void
   {
+    var h:Int = height;
+    var w:Int = width;
     var x:Int = 0;
     var y:Int = 0;
 
-    for (y in 0...height)
+    for (y in 0...h)
     {
-      for (x in 0...width)
+      for (x in 0...w)
       {
         setData(x, y, -1);
       }
@@ -160,11 +162,12 @@ class Sprite
   */
   private function mirrorX():Void
   {
+    var h:Int = height;
     var w:Int = Math.floor(width/2);
     var x:Int = 0;
     var y:Int = 0;
 
-    for (y in 0...height)
+    for (y in 0...h)
     {
       for (x in 0...w)
       {
@@ -184,8 +187,8 @@ class Sprite
   {
     var h:Int = Math.floor(height/2);
     var w:Int = width;
-    var x:Int;
-    var y:Int;
+    var x:Int = 0;
+    var y:Int = 0;
 
     for (y in 0...h)
     {
@@ -343,24 +346,34 @@ class Sprite
 
     var brightness:Float = 0;
 
-    if (isVerticalGradient) {
+    // Target XY of BitmapData pixels
+    var x:Int = 0;
+    var y:Int = 0;
+
+
+    if (isVerticalGradient)
+    {
       ulen = height;
       vlen = width;
-    } else {
+    }
+    else
+    {
       ulen = width;
       vlen = height;
     }
 
     _bitmapData.lock();
 
-    for (u in 0...ulen) {
+    for (u in 0...ulen)
+    {
       // Create a non-uniform random number between 0 and 1 (lower numbers more likely)
       isNewColor = Math.abs(((Math.random() * 2 - 1) 
                            + (Math.random() * 2 - 1) 
                            + (Math.random() * 2 - 1)) / 3);
 
       // Only change the color sometimes (values above 0.8 are less likely than others)
-      if (isNewColor > (1 - colorVariations)) {
+      if (isNewColor > (1 - colorVariations))
+      {
         hue = Math.random();
       }
 
@@ -370,11 +383,15 @@ class Sprite
         {
           val   = getData(v, u);
           index = (u * vlen + v) * 4;
+          x     = v;
+          y     = u;
         }
         else
         {
           val   = getData(u, v);
           index = (v * ulen + u) * 4;
+          x     = u;
+          y     = v;
         }
 
         color.setRGB(1,1,1);
@@ -391,15 +408,19 @@ class Sprite
             color.setHSL(hue, saturation, brightness);
 
             // If this is an edge, then darken the pixel
-            if (val == -1) {
+            if (val == -1)
+            {
               color.r *= edgeBrightness;
               color.g *= edgeBrightness;
               color.b *= edgeBrightness;
             }
 
-          }  else {
+          }
+          else
+          {
             // Not colored, simply output black
-            if (val == -1) {
+            if (val == -1)
+            {
               color.r = 0;
               color.g = 0;
               color.b = 0;
@@ -407,7 +428,7 @@ class Sprite
           }
         }
 
-        _bitmapData.setPixel( u, v, color.getRGB() );
+        _bitmapData.setPixel( x, y , color.getRGB() );
       }
     }
 
