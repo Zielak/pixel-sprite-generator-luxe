@@ -3,11 +3,14 @@ package psg;
 
 import luxe.Color;
 import luxe.Sprite;
+import luxe.Component;
 import luxe.Vector;
+import luxe.Visual;
 import luxe.options.SpriteOptions;
 
-class PixelSprite extends Sprite
+class PixelSprite extends Component
 {
+  var _visual:Visual;
 
   public var data:Array<Int>;
 
@@ -39,12 +42,10 @@ class PixelSprite extends Sprite
  
   override public function new( _options:PixelSpriteOptions ):Void
   {
-
+    _options.name = 'psg';
     super(_options);
 
     mask      = cast(_options.mask, Mask);
-    size.x    = Std.int( mask.width * (mask.mirrorX ? 2 : 1) );
-    size.y    = Std.int( mask.height * (mask.mirrorY ? 2 : 1) );
 
       // Default values
     isColored       = (_options.isColored == null) ? false : _options.isColored;
@@ -64,6 +65,7 @@ class PixelSprite extends Sprite
    */
   override function init():Void
   {
+    initVisual();
     initData();
 
     applyMask();
@@ -81,6 +83,14 @@ class PixelSprite extends Sprite
     renderPixelData();
   }
 
+
+  function initVisual():Void
+  {
+    _visual   = cast entity;
+
+    _visual.size.x    = Std.int( mask.width * (mask.mirrorX ? 2 : 1) );
+    _visual.size.y    = Std.int( mask.height * (mask.mirrorY ? 2 : 1) );
+  }
   
   /**
    * The getData method returns the sprite template data at location (x, y)
@@ -94,7 +104,7 @@ class PixelSprite extends Sprite
    * @param  y Y position of pixel
    * @return   Value of pixel at position
    */
-  private function getData(x, y):Int
+  function getData(x, y):Int
   {
     return data[y * width + x];
   };
@@ -113,7 +123,7 @@ class PixelSprite extends Sprite
   *   @param {value}
   *   @returns {undefined}
   */
-  private function setData(x, y, value):Void
+  function setData(x, y, value):Void
   {
     data[y * width + x] = value;
   };
@@ -124,7 +134,7 @@ class PixelSprite extends Sprite
   *   @method initData
   *   @returns {undefined}
   */
-  private function initData():Void
+  function initData():Void
   {
     var h:Int = height;
     var w:Int = width;
@@ -146,7 +156,7 @@ class PixelSprite extends Sprite
   *   @method mirrorX
   *   @returns {undefined}
   */
-  private function mirrorX():Void
+  function mirrorX():Void
   {
     var h:Int = height;
     var w:Int = Math.floor(width/2);
@@ -169,7 +179,7 @@ class PixelSprite extends Sprite
   *   @method 
   *   @returns {undefined}
   */
-  private function mirrorY():Void
+  function mirrorY():Void
   {
     var h:Int = Math.floor(height/2);
     var w:Int = width;
@@ -195,7 +205,7 @@ class PixelSprite extends Sprite
   *   @method applyMask
   *   @returns {undefined}
   */
-  private function applyMask():Void
+  function applyMask():Void
   {
     var h:Int = mask.height;
     var w:Int = mask.width;
@@ -225,7 +235,7 @@ class PixelSprite extends Sprite
   *   @method generateRandomSample
   *   @returns {undefined}
   */
-  private function generateRandomSample():Void
+  function generateRandomSample():Void
   {
     var h:Int = height;
     var w:Int = width;
@@ -268,7 +278,7 @@ class PixelSprite extends Sprite
   *   @method generateEdges
   *   @returns {undefined}
   */
-  private function generateEdges():Void
+  function generateEdges():Void
   {
     var h:Int = height;
     var w:Int = width;
@@ -311,7 +321,7 @@ class PixelSprite extends Sprite
   *   @method renderPixelData
   *   @returns {undefined}
   */
-  private function renderPixelData():Void
+  function renderPixelData():Void
   {
     // Prepare all the variables first
     var isVerticalGradient:Bool = Math.random() > 0.5;
@@ -348,7 +358,7 @@ class PixelSprite extends Sprite
       vlen = height;
     }
 
-    texture.lock();
+    _visual.texture.lock();
 
     for (u in 0...ulen)
     {
@@ -414,19 +424,19 @@ class PixelSprite extends Sprite
           }
         }
 
-        texture.set_pixel( new Vector(x, y) , color );
+        _visual.texture.set_pixel( new Vector(x, y) , color );
       }
     }
 
-    texture.unlock();
+    _visual.texture.unlock();
   };
 
 
   function get_width():Int{
-    return Std.int(size.x);
+    return Std.int(_visual.size.x);
   }
   function get_height():Int{
-    return Std.int(size.y);
+    return Std.int(_visual.size.y);
   }
 
   /**
