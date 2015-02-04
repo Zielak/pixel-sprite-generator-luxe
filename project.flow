@@ -1,0 +1,23 @@
+{
+  project : {
+    name : 'PixelSpriteGenerator',
+    version : '0.0.3',
+    author : 'Darek Greenly',
+
+    app : {
+      name : 'PixelSpriteGenerator',
+      package : 'pl.zielak.PixelSpriteGenerator'
+    },
+
+    build : {
+      dependencies : {
+        luxe : '*',
+      }
+    },
+
+    files : {
+      assets : 'assets/'
+    }
+
+  }
+}

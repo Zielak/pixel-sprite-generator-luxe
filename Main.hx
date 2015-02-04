@@ -1,5 +1,5 @@
 /**
- * Pixel Sprite Generator v0.0.2
+ * Pixel Sprite Generator v0.0.3
  *
  * This is a Haxe version of David Bollinger's pixelrobots and
  * pixelspaceships algorithm.

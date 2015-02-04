@@ -1,11 +1,14 @@
-pixel-sprite-generator
+# WAIT
+
+This is work in progress.
+**DO NOT TRUST THIS README**
+
+pixel-sprite-generator-luxe
 ======================
 
 Haxe port of [Pixel Sprite Generator](https://github.com/zfedoran/pixel-sprite-generator) by [zfedoran](https://github.com/zfedoran). 
 
 ##Live Example
-
-**SWF** - [http://zielak.pl/pub/github/pixel-sprite-generator/PixelSpriteGenerator.swf](http://zielak.pl/pub/github/pixel-sprite-generator/PixelSpriteGenerator.swf)
 
 **HTML/JS** - [http://zielak.pl/pub/github/pixel-sprite-generator/](http://zielak.pl/pub/github/pixel-sprite-generator/)
 
