@@ -16,90 +16,116 @@
 
 package;
 
-import openfl.text.TextField;
+import luxe.Color;
+import luxe.Text;
+import luxe.Vector;
 
 
-class Main extends openfl.display.Sprite {
+class Main extends luxe.Game {
   
-  private var spaceship:psg.Mask;
-  private var humanoid:psg.Mask;
-  private var dragon:psg.Mask;
-  private var robot:psg.Mask;
+  var spaceship:psg.Mask;
+  var humanoid:psg.Mask;
+  var dragon:psg.Mask;
+  var robot:psg.Mask;
 
-  private var SPRITE_COUNT:Int = 40; //116;
-  private var SPRITE_XMAX:Int = 700;
-  private var SPRITE_SPACING:Int = 10;
-  private var SPRITE_SCALE:Float = 3;
+  public static inline var SPRITE_COUNT:Int = 40; //116;
+  public static inline var SPRITE_XMAX:Int = 700;
+  public static inline var SPRITE_SPACING:Int = 10;
+  public static inline var SPRITE_SCALE:Float = 3;
   
-  private var sprite:psg.Sprite;
-  private var _y:Int;
-  private var _x:Int;
+  var sprite:psg.PixelSprite;
+  var _y:Int;
+  var _x:Int;
 
   
   public function new () {
     
     super ();
     
-    spaceship = new psg.Mask([
-      0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 1, 1,
-      0, 0, 0, 0, 1,-1,
-      0, 0, 0, 1, 1,-1,
-      0, 0, 0, 1, 1,-1,
-      0, 0, 1, 1, 1,-1,
-      0, 1, 1, 1, 2, 2,
-      0, 1, 1, 1, 2, 2,
-      0, 1, 1, 1, 2, 2,
-      0, 1, 1, 1, 1,-1,
-      0, 0, 0, 1, 1, 1,
-      0, 0, 0, 0, 0, 0
-    ], 6, 12, true, false);
+    spaceship = new psg.Mask({
+      data: [
+        0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 1, 1,
+        0, 0, 0, 0, 1,-1,
+        0, 0, 0, 1, 1,-1,
+        0, 0, 0, 1, 1,-1,
+        0, 0, 1, 1, 1,-1,
+        0, 1, 1, 1, 2, 2,
+        0, 1, 1, 1, 2, 2,
+        0, 1, 1, 1, 2, 2,
+        0, 1, 1, 1, 1,-1,
+        0, 0, 0, 1, 1, 1,
+        0, 0, 0, 0, 0, 0
+      ],
+      width: 6,
+      height: 12,
+      mirrorX: true,
+      mirrorY: false
+    });
 
-    humanoid = new psg.Mask([
-      0, 0, 0, 0, 1, 1, 1, 1,
-      0, 0, 0, 0, 1, 1, 2,-1,
-      0, 0, 0, 0, 1, 1, 2,-1,
-      0, 0, 0, 0, 0, 0, 2,-1,
-      0, 0, 1, 1, 1, 1, 2,-1,
-      0, 1, 1, 2, 2, 1, 2,-1,
-      0, 0, 1, 1, 0, 1, 1, 2,
-      0, 0, 0, 0, 1, 1, 1, 2,
-      0, 0, 0, 0, 1, 1, 1, 2,
-      0, 0, 0, 0, 1, 1, 0, 0,
-      0, 0, 0, 1, 1, 1, 0, 0,
-      0, 0, 0, 1, 2, 1, 0, 0,
-      0, 0, 0, 1, 2, 1, 0, 0,
-      0, 0, 0, 1, 2, 2, 0, 0
-    ], 8, 14, true, false);
+    humanoid = new psg.Mask({
+      data: [
+        0, 0, 0, 0, 1, 1, 1, 1,
+        0, 0, 0, 0, 1, 1, 2,-1,
+        0, 0, 0, 0, 1, 1, 2,-1,
+        0, 0, 0, 0, 0, 0, 2,-1,
+        0, 0, 1, 1, 1, 1, 2,-1,
+        0, 1, 1, 2, 2, 1, 2,-1,
+        0, 0, 1, 1, 0, 1, 1, 2,
+        0, 0, 0, 0, 1, 1, 1, 2,
+        0, 0, 0, 0, 1, 1, 1, 2,
+        0, 0, 0, 0, 1, 1, 0, 0,
+        0, 0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 1, 2, 1, 0, 0,
+        0, 0, 0, 1, 2, 1, 0, 0,
+        0, 0, 0, 1, 2, 2, 0, 0
+      ],
+      width: 8,
+      height: 14,
+      mirrorX: true,
+      mirrorY: false
+    });
 
-    dragon = new psg.Mask([
-      0,0,0,0,0,0,0,0,0,0,0,0,
-      0,0,0,0,1,1,1,1,0,0,0,0,
-      0,0,0,1,1,2,2,1,1,0,0,0,
-      0,0,1,1,1,2,2,1,1,1,0,0,
-      0,0,0,0,1,1,1,1,1,1,1,0,
-      0,0,0,0,0,0,1,1,1,1,1,0,
-      0,0,0,0,0,0,1,1,1,1,1,0,
-      0,0,0,0,1,1,1,1,1,1,1,0,
-      0,0,1,1,1,1,1,1,1,1,0,0,
-      0,0,0,1,1,1,1,1,1,0,0,0,
-      0,0,0,0,1,1,1,1,0,0,0,0,
-      0,0,0,0,0,0,0,0,0,0,0,0
-    ], 12, 12, false, false); 
+    dragon = new psg.Mask({
+      data: [
+        0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,1,1,1,1,0,0,0,0,
+        0,0,0,1,1,2,2,1,1,0,0,0,
+        0,0,1,1,1,2,2,1,1,1,0,0,
+        0,0,0,0,1,1,1,1,1,1,1,0,
+        0,0,0,0,0,0,1,1,1,1,1,0,
+        0,0,0,0,0,0,1,1,1,1,1,0,
+        0,0,0,0,1,1,1,1,1,1,1,0,
+        0,0,1,1,1,1,1,1,1,1,0,0,
+        0,0,0,1,1,1,1,1,1,0,0,0,
+        0,0,0,0,1,1,1,1,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0
+      ],
+      width: 12,
+      height: 12,
+      mirrorX: false,
+      mirrorY: false
+    }); 
                     
-    robot = new psg.Mask([
-      0, 0, 0, 0,
-      0, 1, 1, 1,
-      0, 1, 2, 2,
-      0, 0, 1, 2,
-      0, 0, 0, 2,
-      1, 1, 1, 2,
-      0, 1, 1, 2,
-      0, 0, 0, 2,
-      0, 0, 0, 2,
-      0, 1, 2, 2,
-      1, 1, 0, 0
-    ], 4, 11, true, false);
+    robot = new psg.Mask({
+      data: [
+        0, 0, 0, 0,
+        0, 1, 1, 1,
+        0, 1, 2, 2,
+        0, 0, 1, 2,
+        0, 0, 0, 2,
+        1, 1, 1, 2,
+        0, 1, 1, 2,
+        0, 0, 0, 2,
+        0, 0, 0, 2,
+        0, 1, 2, 2,
+        1, 1, 0, 0
+      ],
+      width: 4,
+      height: 11,
+      mirrorX: true,
+      mirrorY: false
+    });
 
 
     // removeChildren(0, numChildren);
@@ -109,7 +135,7 @@ class Main extends openfl.display.Sprite {
   }
 
 
-  private function showExamples():Void
+  function showExamples():Void
   {
     var i:Int = 0;
     _y = SPRITE_SPACING;
@@ -117,11 +143,14 @@ class Main extends openfl.display.Sprite {
     
     // Example 1
 
-    placeTextField( "Colored ship sprites");
+    placeText( "Colored ship sprites");
 
     for (i in 0...SPRITE_COUNT)
     {
-      sprite = new psg.Sprite(spaceship, true);
+      sprite = new psg.PixelSprite({
+        mask: spaceship,
+        isColored: true
+      });
       placeSprite( sprite );
     }
     prepareForNextExample();
@@ -129,11 +158,15 @@ class Main extends openfl.display.Sprite {
 
     // Example 2
 
-    placeTextField( "Colored humanoids (with low saturation)");
+    placeText( "Colored humanoids (with low saturation)");
 
     for (i in 0...SPRITE_COUNT)
     {
-      sprite = new psg.Sprite(humanoid, true, null, null, null, 0.1);
+      sprite = new psg.PixelSprite({
+        mask: humanoid,
+        isColored: true,
+        saturation: 0.1
+      });
       placeSprite( sprite );
     }
     prepareForNextExample();
@@ -141,11 +174,16 @@ class Main extends openfl.display.Sprite {
 
     // Example 3
 
-    placeTextField( "Colored ship sprites (with many color variations per ship)");
+    placeText( "Colored ship sprites (with many color variations per ship)");
 
     for (i in 0...SPRITE_COUNT)
     {
-      sprite = new psg.Sprite(spaceship, true, null, 0.9, null, 0.8);
+      sprite = new psg.PixelSprite({
+        mask: spaceship,
+        isColored: true, 
+        colorVariations: 0.9,
+        saturation: 0.8
+      });
       placeSprite( sprite );
     }
     prepareForNextExample();
@@ -153,11 +191,14 @@ class Main extends openfl.display.Sprite {
 
     // Example 4
 
-    placeTextField( "Colored dragon sprites");
+    placeText( "Colored dragon sprites");
 
     for (i in 0...SPRITE_COUNT)
     {
-      sprite = new psg.Sprite(dragon, true);
+      sprite = new psg.PixelSprite({
+        mask: dragon,
+        isColored: true
+      });
       placeSprite( sprite );
     }
     prepareForNextExample();
@@ -166,11 +207,13 @@ class Main extends openfl.display.Sprite {
 
     // Example 5
 
-    placeTextField( "Black & white robot sprites");
+    placeText( "Black & white robot sprites");
 
     for (i in 0...SPRITE_COUNT)
     {
-      sprite = new psg.Sprite(robot);
+      sprite = new psg.PixelSprite({
+        mask: robot
+      });
       placeSprite( sprite );
     }
     prepareForNextExample();
@@ -179,20 +222,16 @@ class Main extends openfl.display.Sprite {
   }
 
 
-  private function placeTextField( str:String ):Void
+  private function placeText( str:String ):Void
   {
-    var text:TextField = new TextField();
-    text.text = str;
-    text.x = SPRITE_SPACING;
-    text.y = _y;
-
-    text.setTextFormat( new openfl.text.TextFormat("Arial", 16, 0x000000, true) );
-    text.selectable = false;
-
-    text.width = 600;
-    text.height = 40;
-
-    addChild(text);
+    var text:Text = new Text({
+      text: str,
+      pos: new Vector(SPRITE_SPACING, _y),
+      point_size: 16,
+      color: new Color().rgb(0x000000),
+      size: new Vector(600, 40),
+      batcher: Luxe.renderer.batcher
+    });
 
     _y += 30;
   }
@@ -201,23 +240,21 @@ class Main extends openfl.display.Sprite {
    * Enlarges and places sprite to the view.
    * @return
    */
-  private function placeSprite( sprite:psg.Sprite ):Void
+  private function placeSprite( sprite:psg.PixelSprite ):Void
   {
-    sprite.bitmap.scaleX = SPRITE_SCALE;
-    sprite.bitmap.scaleY = SPRITE_SCALE;
+    sprite.scale.x = SPRITE_SCALE;
+    sprite.scale.y = SPRITE_SCALE;
 
     if( _x >= SPRITE_XMAX )
     {
       _x = SPRITE_SPACING;
-      _y += Math.floor( sprite.bitmap.height + SPRITE_SPACING );
+      _y += Math.floor( sprite.height + SPRITE_SPACING );
     }
-    sprite.bitmap.x = _x;
+    sprite.pos.x = _x;
 
-    _x += Math.floor( (sprite.bitmap.width + SPRITE_SPACING) );
+    _x += Math.floor( (sprite.width + SPRITE_SPACING) );
 
-    sprite.bitmap.y = _y;
-
-    addChild( sprite.bitmap );
+    sprite.pos.y = _y;
   }
 
 

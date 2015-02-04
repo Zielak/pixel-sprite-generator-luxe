@@ -1,3 +1,2 @@
 .DS_Store
-export/*
-pixel-sprite-generator.zip
+bin/*

@@ -2,9 +2,9 @@
 package psg;
 
 import luxe.Color;
-import luxe.ColorHSL
 import luxe.Sprite;
 import luxe.Vector;
+import luxe.options.SpriteOptions;
 
 class PixelSprite extends Sprite
 {
@@ -18,6 +18,9 @@ class PixelSprite extends Sprite
   public var colorVariations:Float;
   public var brightnessNoise:Float;
   public var saturation:Float;
+
+  public var width(get, null):Int;
+  public var height(get, null):Int;
 
 
   /**
@@ -39,9 +42,9 @@ class PixelSprite extends Sprite
 
     super(_options);
 
-    mask      = _options.mask;
-    width     = mask.width * (mask.mirrorX ? 2 : 1);
-    height    = mask.height * (mask.mirrorY ? 2 : 1);
+    mask      = cast(_options.mask, Mask);
+    size.x    = Std.int( mask.width * (mask.mirrorX ? 2 : 1) );
+    size.y    = Std.int( mask.height * (mask.mirrorY ? 2 : 1) );
 
       // Default values
     isColored       = (_options.isColored == null) ? false : _options.isColored;
@@ -411,13 +414,20 @@ class PixelSprite extends Sprite
           }
         }
 
-        texture.set_pixel( new Vector(x, y) , color.getRGB() );
+        texture.set_pixel( new Vector(x, y) , color );
       }
     }
 
     texture.unlock();
   };
 
+
+  function get_width():Int{
+    return Std.int(size.x);
+  }
+  function get_height():Int{
+    return Std.int(size.y);
+  }
 
   /**
   *   This method converts the template data to a string value for debugging
@@ -449,65 +459,12 @@ class PixelSprite extends Sprite
 }
 
 typedef PixelSpriteOptions = {
-  var mask_:Mask;
+  > SpriteOptions,
+
+  var mask:psg.Mask;
   @:optional var isColored:Bool;
   @:optional var edgeBrightness:Float;
   @:optional var colorVariations:Float;
   @:optional var brightnessNoise:Float;
   @:optional var saturation:Float;
 }
-
-
-
-
-class Mask 
-{
-
-  public var data:Array<Int>;
-  public var width:Int;
-  public var height:Int;
-  public var mirrorX:Bool;
-  public var mirrorY:Bool;
-  
-  /**
-   *   The Mask class defines a 2D template form which sprites can be generated.
-   *
-   *   @class Mask
-   *   @constructor
-   *   @param {data} Integer array describing which parts of the sprite should be
-   *   empty, body, and border. The mask only defines a semi-ridgid stucture
-   *   which might not strictly be followed based on randomly generated numbers.
-   *
-   *      -1 = Always border (black)
-   *       0 = Empty
-   *       1 = Randomly chosen Empty/Body
-   *       2 = Randomly chosen Border/Body
-   *
-   *   @param {width} Width of the mask data array
-   *   @param {height} Height of the mask data array
-   *   @param {mirrorX} A boolean describing whether the mask should be mirrored on the x axis
-   *   @param {mirrorY} A boolean describing whether the mask should be mirrored on the y axis
-   */
-  public function new( options:MaskOptions ):Void
-  {
-    ?mirrorX_:Bool = true, ?mirrorY_:Bool = true
-
-    data      = options.data;
-    width     = options.width;
-    height    = options.height;
-
-    mirrorX   = (options.mirrorX == null) ? true : options.mirrorX;
-    mirrorY   = (options.mirrorY == null) ? true : options.mirrorY;
-  }
-
-}
-
-typedef MaskOptions = {
-  var data:Array<Int>;
-  var width:Int;
-  var height:Int;
-
-  @:optional var mirrorX:Bool;
-  @:optional var mirrorY:Bool;
-}
-
