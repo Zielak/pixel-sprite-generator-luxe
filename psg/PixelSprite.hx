@@ -32,6 +32,7 @@ class PixelSprite extends Component
 
 
   var pixelsInt:Array<Int>;
+  var pixelsIntSplit:Array<Int>;
   var pixelsUInt8:UInt8Array;
 
 
@@ -66,6 +67,7 @@ class PixelSprite extends Component
     data = new Array<Int>();
 
     pixelsInt = new Array<Int>();
+    pixelsIntSplit = new Array<Int>();
   }
 
 
@@ -435,18 +437,23 @@ class PixelSprite extends Component
 
         // _sprite.texture.set_pixel( new Vector(x, y) , color );
         pixelsInt.push(color.getARGB());
+        pixelsIntSplit.push(Math.round(color.b*0xff));
+        pixelsIntSplit.push(Math.round(color.g*0xff));
+        pixelsIntSplit.push(Math.round(color.r*0xff));
+        pixelsIntSplit.push(Math.round(color.a*0xff));
       }
     }
 
     // _sprite.texture.unlock();
-    pixelsUInt8 = new UInt8Array(data.length);
-    pixelsUInt8.set(pixelsInt);
+    pixelsUInt8 = new UInt8Array(data.length*4);
+    pixelsUInt8.set(pixelsIntSplit);
 
-    trace('pixelsInt' + pixelsInt);
+    // trace('pixelsInt' + pixelsInt);
     trace('pixelsUInt8' + pixelsUInt8);
 
     trace(' ## Texture.load_from_pixels(${name+'.pixels'}, ${width}, ${height}, ...)');
     _sprite.texture = Texture.load_from_pixels(name+'.pixels', width, height, pixelsUInt8);
+    _sprite.texture.filter = nearest;
 
     rendered = true;
   };
@@ -463,10 +470,10 @@ class PixelSprite extends Component
 
 
   function get_width():Int{
-    return Std.int(_sprite.size.x);
+    return mask.width;
   }
   function get_height():Int{
-    return Std.int(_sprite.size.y);
+    return mask.height;
   }
 
   /**

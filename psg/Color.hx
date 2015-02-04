@@ -7,7 +7,7 @@ class Color
   public var r:Float;
   public var g:Float;
   public var b:Float;
-  var a:Float = 1.0;
+  public var a:Float = 1.0;
 
   public function new(r_:Float, g_:Float, b_:Float):Void
   {
