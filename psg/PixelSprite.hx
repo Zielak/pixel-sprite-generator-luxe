@@ -1,16 +1,19 @@
 
 package psg;
 
-import luxe.Color;
 import luxe.Sprite;
 import luxe.Component;
 import luxe.Vector;
-import luxe.Visual;
+import luxe.Sprite;
 import luxe.options.SpriteOptions;
+
+import snow.utils.UInt8Array;
+
+import phoenix.Texture;
 
 class PixelSprite extends Component
 {
-  var _visual:Visual;
+  var _sprite:Sprite;
 
   public var data:Array<Int>;
 
@@ -24,6 +27,12 @@ class PixelSprite extends Component
 
   public var width(get, null):Int;
   public var height(get, null):Int;
+
+  @:isVar public var rendered(default, null):Bool = false;
+
+
+  var pixelsInt:Array<Int>;
+  var pixelsUInt8:UInt8Array;
 
 
   /**
@@ -45,7 +54,7 @@ class PixelSprite extends Component
     _options.name = 'psg';
     super(_options);
 
-    mask      = cast(_options.mask, Mask);
+    mask = _options.mask; // cast(_options.mask, Mask);
 
       // Default values
     isColored       = (_options.isColored == null) ? false : _options.isColored;
@@ -56,16 +65,19 @@ class PixelSprite extends Component
 
     data = new Array<Int>();
 
-    init();
+    pixelsInt = new Array<Int>();
   }
 
 
   /**
    * The init method calls all functions required to generate the sprite.
    */
-  override function init():Void
+  override function onadded():Void
   {
-    initVisual();
+    _sprite = cast entity;
+    // _sprite.texture = new Texture(Luxe.resources, texture);
+
+    initSprite();
     initData();
 
     applyMask();
@@ -80,16 +92,13 @@ class PixelSprite extends Component
     }
 
     generateEdges();
-    renderPixelData();
   }
 
 
-  function initVisual():Void
+  function initSprite():Void
   {
-    _visual   = cast entity;
-
-    _visual.size.x    = Std.int( mask.width * (mask.mirrorX ? 2 : 1) );
-    _visual.size.y    = Std.int( mask.height * (mask.mirrorY ? 2 : 1) );
+    _sprite.size.x = Std.int( mask.width * (mask.mirrorX ? 2 : 1) );
+    _sprite.size.y = Std.int( mask.height * (mask.mirrorY ? 2 : 1) );
   }
   
   /**
@@ -338,7 +347,7 @@ class PixelSprite extends Component
     var val:Int = 0;
     var index:Int = 0;
 
-    var color:Color = new Color().rgb(0x000000);
+    var color:Color = new Color(0,0,0);
 
     var brightness:Float = 0;
 
@@ -358,7 +367,7 @@ class PixelSprite extends Component
       vlen = height;
     }
 
-    _visual.texture.lock();
+    // _sprite.texture.lock();
 
     for (u in 0...ulen)
     {
@@ -390,7 +399,7 @@ class PixelSprite extends Component
           y     = v;
         }
 
-        color.set(1,1,1);
+        color.setRGB(1,1,1);
 
         if (val != 0)
         {
@@ -401,7 +410,7 @@ class PixelSprite extends Component
                                    + Math.random() * brightnessNoise;
 
             // Get the RGB color value
-            color.fromColorHSL( new ColorHSL(hue, saturation, brightness) );
+            color.setHSL( hue, saturation, brightness );
 
             // If this is an edge, then darken the pixel
             if (val == -1)
@@ -424,19 +433,40 @@ class PixelSprite extends Component
           }
         }
 
-        _visual.texture.set_pixel( new Vector(x, y) , color );
+        // _sprite.texture.set_pixel( new Vector(x, y) , color );
+        pixelsInt.push(color.getARGB());
       }
     }
 
-    _visual.texture.unlock();
+    // _sprite.texture.unlock();
+    pixelsUInt8 = new UInt8Array(data.length);
+    pixelsUInt8.set(pixelsInt);
+
+    trace('pixelsInt' + pixelsInt);
+    trace('pixelsUInt8' + pixelsUInt8);
+
+    trace(' ## Texture.load_from_pixels(${name+'.pixels'}, ${width}, ${height}, ...)');
+    _sprite.texture = Texture.load_from_pixels(name+'.pixels', width, height, pixelsUInt8);
+
+    rendered = true;
   };
 
 
+
+  override function update(_)
+  {
+    if(_sprite.inited && !rendered)
+    {
+      renderPixelData();
+    }
+  }
+
+
   function get_width():Int{
-    return Std.int(_visual.size.x);
+    return Std.int(_sprite.size.x);
   }
   function get_height():Int{
-    return Std.int(_visual.size.y);
+    return Std.int(_sprite.size.y);
   }
 
   /**

@@ -19,8 +19,9 @@ package;
 import luxe.Color;
 import luxe.Text;
 import luxe.Rectangle;
-import luxe.Visual;
+import luxe.Sprite;
 import luxe.Vector;
+import psg.PixelSprite;
 
 
 class Main extends luxe.Game {
@@ -30,12 +31,11 @@ class Main extends luxe.Game {
   var dragon:psg.Mask;
   var robot:psg.Mask;
 
-  public static inline var SPRITE_COUNT:Int = 40; //116;
+  public static inline var SPRITE_COUNT:Int = 1; //116;
   public static inline var SPRITE_XMAX:Int = 700;
   public static inline var SPRITE_SPACING:Int = 10;
-  public static inline var SPRITE_SCALE:Float = 3;
+  public static inline var SPRITE_SCALE:Float = 2;
   
-  var genSprite:psg.PixelSprite;
   var _y:Int;
   var _x:Int;
 
@@ -147,11 +147,10 @@ class Main extends luxe.Game {
 
     for (i in 0...SPRITE_COUNT)
     {
-      genSprite = new psg.PixelSprite({
+      placeSprite({
         mask: spaceship,
         isColored: true
       });
-      placeSprite( genSprite );
     }
     prepareForNextExample();
 
@@ -162,12 +161,11 @@ class Main extends luxe.Game {
 
     for (i in 0...SPRITE_COUNT)
     {
-      genSprite = new psg.PixelSprite({
+      placeSprite({
         mask: humanoid,
         isColored: true,
         saturation: 0.1
       });
-      placeSprite( genSprite );
     }
     prepareForNextExample();
 
@@ -178,13 +176,12 @@ class Main extends luxe.Game {
 
     for (i in 0...SPRITE_COUNT)
     {
-      genSprite = new psg.PixelSprite({
+      placeSprite({
         mask: spaceship,
         isColored: true, 
         colorVariations: 0.9,
         saturation: 0.8
       });
-      placeSprite( genSprite );
     }
     prepareForNextExample();
 
@@ -195,11 +192,10 @@ class Main extends luxe.Game {
 
     for (i in 0...SPRITE_COUNT)
     {
-      genSprite = new psg.PixelSprite({
+      placeSprite({
         mask: dragon,
         isColored: true
       });
-      placeSprite( genSprite );
     }
     prepareForNextExample();
 
@@ -211,10 +207,9 @@ class Main extends luxe.Game {
 
     for (i in 0...SPRITE_COUNT)
     {
-      genSprite = new psg.PixelSprite({
+      placeSprite({
         mask: robot
       });
-      placeSprite( genSprite );
     }
     prepareForNextExample();
 
@@ -230,31 +225,36 @@ class Main extends luxe.Game {
       align: left,
       align_vertical: center,
       point_size: 16,
-      color: new Color().rgb(0x000000),
+      color: new Color().rgb(0xFFFFFF),
     });
 
-    _y += 30;
+    _y += 50;
   }
 
   /**
    * Enlarges and places sprite to the view.
    * @return
    */
-  private function placeSprite( genSprite:psg.PixelSprite ):Void
+  private function placeSprite( _options:psg.PixelSpriteOptions ):Void
   {
+    var newSprite:PixelSprite = new PixelSprite(_options);
+    var spr:Sprite = new Sprite({
+      name: 'generatedSprite',
+      name_unique: true,
+      size: new Vector(newSprite.mask.width, newSprite.mask.height),
+      scale: new Vector(SPRITE_SCALE,SPRITE_SCALE),
+      color: new Color().rgb(0xFFFFFF),
+    });
+    spr.add(newSprite);
+
     if( _x >= SPRITE_XMAX )
     {
       _x = SPRITE_SPACING;
-      _y += Math.floor( genSprite.height + SPRITE_SPACING );
+      _y += Math.floor( (newSprite.mask.height*SPRITE_SCALE) + SPRITE_SPACING );
     }
-    _x += Math.floor( (genSprite.width + SPRITE_SPACING) );
+    _x += Math.floor( (newSprite.mask.width*SPRITE_SCALE) + SPRITE_SPACING );
 
-    var vis = new Visual({
-      name: 'generatedSprite',
-      scale: new Vector(SPRITE_SCALE,SPRITE_SCALE),
-      pos: new Vector(_x, _y),
-    });
-    vis.add(genSprite);
+    spr.pos = new Vector(_x, _y);
   }
 
 
