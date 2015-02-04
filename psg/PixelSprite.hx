@@ -470,10 +470,10 @@ class PixelSprite extends Component
 
 
   function get_width():Int{
-    return mask.width;
+    return (mask.mirrorX) ? mask.width*2 : mask.width;
   }
   function get_height():Int{
-    return mask.height;
+    return (mask.mirrorY) ? mask.height*2 : mask.height;
   }
 
   /**
