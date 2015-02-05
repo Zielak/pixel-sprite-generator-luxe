@@ -1,5 +1,3 @@
-# WAIT
-
 pixel-sprite-generator-luxe
 ======================
 
