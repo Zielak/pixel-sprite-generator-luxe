@@ -21,6 +21,7 @@ import luxe.Text;
 import luxe.Rectangle;
 import luxe.Sprite;
 import luxe.Vector;
+import luxe.Input;
 import psg.PixelSprite;
 
 
@@ -31,10 +32,12 @@ class Main extends luxe.Game {
   var dragon:psg.Mask;
   var robot:psg.Mask;
 
-  public static inline var SPRITE_COUNT:Int = 1; //116;
-  public static inline var SPRITE_XMAX:Int = 700;
+  var testSprite:Sprite;
+
+  public static inline var SPRITE_ROW_COUNT:Int = 2;
+  public static inline var SPRITE_XMAX:Int = 500;
   public static inline var SPRITE_SPACING:Int = 10;
-  public static inline var SPRITE_SCALE:Float = 8;
+  public static inline var SPRITE_SCALE:Float = 3;
   
   var _y:Int;
   var _x:Int;
@@ -42,64 +45,40 @@ class Main extends luxe.Game {
 
   override function config(config:luxe.AppConfig):luxe.AppConfig
   {
-    config.window.width = 300;
-    config.window.height = 300;
+    config.window.width = 600;
+    config.window.height = 800;
     config.window.resizable = false;
             
     return config;
   }
   
   override function ready () {
-    
-    test1();
+    Luxe.renderer.clear_color = new Color().rgb(0xDDDDDD);
 
-    // removeChildren(0, numChildren);
-
-    // showExamples();
+    initTestMasks();
+    showExamples();
   }
 
 
-  function test1():Void
+  override function onkeydown(e:KeyEvent):Void
   {
-    var newMask = new psg.Mask({
-      data: [
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 1, 1,
-        0, 0, 0, 0, 1,-1,
-        0, 0, 0, 1, 1,-1,
-        0, 0, 0, 1, 1,-1,
-        0, 0, 1, 1, 1,-1,
-        0, 1, 1, 1, 2, 2,
-        0, 1, 1, 1, 2, 2,
-        0, 1, 1, 1, 2, 2,
-        0, 1, 1, 1, 1,-1,
-        0, 0, 0, 1, 1, 1,
-        0, 0, 0, 0, 0, 0
-      ],
-      width: 6,
-      height: 12,
-      mirrorX: true,
-      mirrorY: false
-    });
-    var newSprite:PixelSprite = new PixelSprite({
-      mask: newMask,
-      isColored: true, 
-      colorVariations: 0.9,
-      saturation: 0.8
-    });
+    if(e.keycode == Key.space)
+    {
+      Luxe.scene.empty();
+      showExamples();
+    }
+  }
 
-    var spr:Sprite = new Sprite({
-      name: 'generatedSprite',
-      name_unique: true,
-      size: new Vector(newSprite.mask.width, newSprite.mask.height),
-      scale: new Vector(SPRITE_SCALE,SPRITE_SCALE),
-      color: new Color().rgb(0xFFFFFFFF),
-    });
-    spr.add(newSprite);
+  override function ontouchdown(e:TouchEvent):Void
+  {
+    Luxe.scene.empty();
+    showExamples();
   }
 
 
-  function showExamples():Void
+
+
+  function initTestMasks():Void
   {
     spaceship = new psg.Mask({
       data: [
@@ -185,17 +164,48 @@ class Main extends luxe.Game {
       mirrorX: true,
       mirrorY: false
     });
+  }
+
+  function test1():Void
+  {    
+    if(testSprite != null)
+    {
+      testSprite.destroy(true);
+    }
+    
+    var newSprite:PixelSprite = new PixelSprite({
+      mask: spaceship,
+      isColored: true, 
+      colorVariations: 0.5,
+      saturation: 0.5
+    });
 
 
+    testSprite = new Sprite({
+      name: 'generatedSprite',
+      name_unique: true,
+      size: new Vector(newSprite.mask.width, newSprite.mask.height),
+      scale: new Vector(SPRITE_SCALE,SPRITE_SCALE),
+      color: new Color().rgb(0xFFFFFFFF),
+      pos: Luxe.screen.mid,
+    });
+    testSprite.add(newSprite);
+  }
+
+
+  function showExamples():Void
+  {
     var i:Int = 0;
     _y = SPRITE_SPACING;
     _x = SPRITE_SPACING;
+
+    placeText("Tap or [SPACE] generate new sprites");
     
     // Example 1
 
-    placeText( "Colored ship sprites");
+    placeText("Colored ship sprites");
 
-    for (i in 0...SPRITE_COUNT)
+    for (i in 0...11*SPRITE_ROW_COUNT)
     {
       placeSprite({
         mask: spaceship,
@@ -207,9 +217,9 @@ class Main extends luxe.Game {
 
     // Example 2
 
-    placeText( "Colored humanoids (with low saturation)");
+    placeText("Colored humanoids (with low saturation)");
 
-    for (i in 0...SPRITE_COUNT)
+    for (i in 0...9*SPRITE_ROW_COUNT)
     {
       placeSprite({
         mask: humanoid,
@@ -222,9 +232,9 @@ class Main extends luxe.Game {
 
     // Example 3
 
-    placeText( "Colored ship sprites (with many color variations per ship)");
+    placeText("Colored ship sprites (with many color variations per ship)");
 
-    for (i in 0...SPRITE_COUNT)
+    for (i in 0...11*SPRITE_ROW_COUNT)
     {
       placeSprite({
         mask: spaceship,
@@ -238,9 +248,9 @@ class Main extends luxe.Game {
 
     // Example 4
 
-    placeText( "Colored dragon sprites");
+    placeText("Colored dragon sprites");
 
-    for (i in 0...SPRITE_COUNT)
+    for (i in 0...11*SPRITE_ROW_COUNT)
     {
       placeSprite({
         mask: dragon,
@@ -253,9 +263,9 @@ class Main extends luxe.Game {
 
     // Example 5
 
-    placeText( "Black & white robot sprites");
+    placeText("Black & white robot sprites");
 
-    for (i in 0...SPRITE_COUNT)
+    for (i in 0...7*SPRITE_ROW_COUNT)
     {
       placeSprite({
         mask: robot
@@ -272,13 +282,13 @@ class Main extends luxe.Game {
     var text:Text = new Text({
       text: str,
       bounds: new Rectangle(SPRITE_SPACING, _y, 600, 40),
-      align: left,
+      align: center,
       align_vertical: center,
       point_size: 16,
-      color: new Color().rgb(0xFFFFFF),
+      color: new Color().rgb(0x000000),
     });
 
-    _y += 50;
+    _y += 60;
   }
 
   /**
@@ -300,9 +310,9 @@ class Main extends luxe.Game {
     if( _x >= SPRITE_XMAX )
     {
       _x = SPRITE_SPACING;
-      _y += Math.floor( (newSprite.mask.height*SPRITE_SCALE) + SPRITE_SPACING );
+      _y += Math.floor( (newSprite.height*SPRITE_SCALE) + SPRITE_SPACING );
     }
-    _x += Math.floor( (newSprite.mask.width*SPRITE_SCALE) + SPRITE_SPACING );
+    _x += Math.floor( (newSprite.width*SPRITE_SCALE) + SPRITE_SPACING );
 
     spr.pos = new Vector(_x, _y);
   }

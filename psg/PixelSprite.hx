@@ -30,7 +30,7 @@ class PixelSprite extends Component
 
   @:isVar public var rendered(default, null):Bool = false;
 
-
+  var pixelsData2D:Array<Array<Color>>;
   var pixelsInt:Array<Int>;
   var pixelsIntSplit:Array<Int>;
   var pixelsUInt8:UInt8Array;
@@ -68,6 +68,13 @@ class PixelSprite extends Component
 
     pixelsInt = new Array<Int>();
     pixelsIntSplit = new Array<Int>();
+
+
+    pixelsData2D = new Array<Array<psg.Color>>();
+    for(i in 0...height)
+    {
+      pixelsData2D[i] = new Array<psg.Color>();
+    }
   }
 
 
@@ -324,8 +331,7 @@ class PixelSprite extends Component
   };
 
   /**
-  *   This method renders out the template data to a HTML canvas to finally
-  *   create the sprite.
+  *   
   *
   *   (note: only template locations with the values of -1 (border) are rendered)
   *
@@ -349,7 +355,7 @@ class PixelSprite extends Component
     var val:Int = 0;
     var index:Int = 0;
 
-    var color:Color = new Color(0,0,0);
+    var color:Color;
 
     var brightness:Float = 0;
 
@@ -401,15 +407,14 @@ class PixelSprite extends Component
           y     = v;
         }
 
-        color.setRGB(1,1,1);
+        color = new Color(1,1,1,1);
 
         if (val != 0)
         {
           if (isColored)
           {
             // Fade brightness away towards the edges
-            brightness = Math.sin((u / ulen) * Math.PI) * (1 - brightnessNoise) 
-                                   + Math.random() * brightnessNoise;
+            brightness = Math.sin((u / ulen) * Math.PI) * (1 - brightnessNoise) + Math.random() * brightnessNoise;
 
             // Get the RGB color value
             color.setHSL( hue, saturation, brightness );
@@ -431,34 +436,57 @@ class PixelSprite extends Component
               color.r = 0;
               color.g = 0;
               color.b = 0;
+              color.a = 1;
             }
           }
         }
-
-        // _sprite.texture.set_pixel( new Vector(x, y) , color );
-        pixelsInt.push(color.getARGB());
-        pixelsIntSplit.push(Math.round(color.b*0xff));
-        pixelsIntSplit.push(Math.round(color.g*0xff));
-        pixelsIntSplit.push(Math.round(color.r*0xff));
-        pixelsIntSplit.push(Math.round(color.a*0xff));
+        else
+        {
+          // transparent pixel plz
+          color.a = 0;
+        }
+        pixelsData2D[y][x] = color;
       }
     }
+    render();
+  };
 
-    // _sprite.texture.unlock();
+  function render():Void
+  {
+      // First, get all pixels to 1D array
+    for (i in 0...pixelsData2D.length)
+    {
+      for (j in 0...pixelsData2D[i].length)
+      {
+        pixelsIntSplit.push( Math.round(pixelsData2D[i][j].r*0xff) );
+        pixelsIntSplit.push( Math.round(pixelsData2D[i][j].g*0xff) );
+        pixelsIntSplit.push( Math.round(pixelsData2D[i][j].b*0xff) );
+        pixelsIntSplit.push( Math.round(pixelsData2D[i][j].a*0xff) );
+      }
+    };
+
+    // trace('pixelsIntSplit.length = ${pixelsIntSplit.length}');
+
+      // Now pass it over to UInt8Array thing
     pixelsUInt8 = new UInt8Array(data.length*4);
     pixelsUInt8.set(pixelsIntSplit);
 
-    // trace('pixelsInt' + pixelsInt);
-    trace('pixelsUInt8' + pixelsUInt8);
+    // trace('data.length*4 = ${data.length*4}');
+    // trace('pixelsUInt8.length = ${pixelsUInt8.length}');
 
-    trace(' ## Texture.load_from_pixels(${name+'.pixels'}, ${width}, ${height}, ...)');
-    _sprite.texture = Texture.load_from_pixels(name+'.pixels', width, height, pixelsUInt8);
+    // trace('pixelsUInt8' + pixelsUInt8);
+
+    // trace(' ## Texture.load_from_pixels(${name+'.pixels'}, ${width}, ${height}, ...)');
+    _sprite.texture = Texture.load_from_pixels(_sprite.name+name+'.pixels', width, height, pixelsUInt8, false);
     _sprite.texture.filter = nearest;
 
     rendered = true;
-  };
 
+    // _sprite.texture.set_pixel( new Vector(x, y) , color );
+    // pixelsInt.push(color.getARGB());
 
+    // trace('render() Done');
+  }
 
   override function update(_)
   {

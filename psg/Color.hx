@@ -7,10 +7,11 @@ class Color
   public var r:Float;
   public var g:Float;
   public var b:Float;
-  public var a:Float = 1.0;
+  public var a:Float;
 
-  public function new(r_:Float, g_:Float, b_:Float):Void
+  public function new(r_:Float, g_:Float, b_:Float, ?a_:Float = 1.0):Void
   {
+    a = a_;
     r = r_;
     g = g_;
     b = b_;
@@ -23,12 +24,14 @@ class Color
    * @param g_ Green
    * @param b_ Blue
    */
-  public function setRGB(r_:Float, g_:Float, b_:Float):Void
+  public function set(r_:Float, g_:Float, b_:Float, ?a_:Float = 1.0):Void
   {
+    a = a_;
     r = r_;
     g = g_;
     b = b_;
   }
+
 
   /**
    * Get RGB color
