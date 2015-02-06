@@ -32,7 +32,7 @@ class Main extends luxe.Game {
   var dragon:psg.Mask;
   var robot:psg.Mask;
 
-  var testSprite:Sprite;
+  // var testSprite:Sprite;
 
   public static inline var SPRITE_COUNT:Int = 2;
   public static inline var SPRITE_XMAX:Int = 500;
@@ -103,20 +103,20 @@ class Main extends luxe.Game {
 
     humanoid = new psg.Mask({
       data: [
-        0, 0, 0, 0, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 1, 1, 1,
         0, 0, 0, 0, 1, 1, 2,-1,
         0, 0, 0, 0, 1, 1, 2,-1,
         0, 0, 0, 0, 0, 0, 2,-1,
         0, 0, 1, 1, 1, 1, 2,-1,
         0, 1, 1, 2, 2, 1, 2,-1,
-        0, 0, 1, 1, 0, 1, 1, 2,
-        0, 0, 0, 0, 1, 1, 1, 2,
-        0, 0, 0, 0, 1, 1, 1, 2,
+        0, 1, 1, 1, 0, 1, 1, 2,
+        0, 1, 1, 0, 0, 1, 1, 2,
+        0, 0, 1, 0, 1, 1, 2, 2,
+        0, 0, 0, 0, 1, 2, 0, 0,
         0, 0, 0, 0, 1, 1, 0, 0,
-        0, 0, 0, 1, 1, 1, 0, 0,
-        0, 0, 0, 1, 2, 1, 0, 0,
-        0, 0, 0, 1, 2, 1, 0, 0,
-        0, 0, 0, 1, 2, 2, 0, 0
+        0, 0, 0, 0, 2, 1, 0, 0,
+        0, 0, 0, 1, 2, 1, 1, 0,
+        0, 0, 0, 1, 2, 2, 1, 0
       ],
       width: 8,
       height: 14,
@@ -168,27 +168,47 @@ class Main extends luxe.Game {
 
   function test1():Void
   {    
-    if(testSprite != null)
-    {
-      testSprite.destroy(true);
-    }
+    // if(testSprite != null)
+    // {
+    //   testSprite.destroy(true);
+    // }
+
+    Luxe.scene.empty();
     
+    var i:Int = 0;
+    for(i in 0...3)
+    {
+      placeNewSprite();      
+    }
+  }
+
+  function placeNewSprite():Void
+  {
+    var newPos:Vector = new Vector();
+    newPos.x = Math.random()*Luxe.screen.w/2 + Luxe.screen.w/4;
+    newPos.y = Math.random()*Luxe.screen.h/2 + Luxe.screen.h/4;
+
     var newSprite:PixelSprite = new PixelSprite({
       mask: spaceship,
-      isColored: true, 
-      colorVariations: 0.5,
-      saturation: 0.5
+      isColored: true,  
+      colorVariations: 0.6,
+      saturation: 0.8
     });
 
+    var mover:components.Mover = new components.Mover({
+      name: 'mover'
+    });
 
-    testSprite = new Sprite({
+    var testSprite:Sprite = new Sprite({
       name: 'generatedSprite',
       name_unique: true,
       size: new Vector(newSprite.mask.width, newSprite.mask.height),
       scale: new Vector(SPRITE_SCALE,SPRITE_SCALE),
-      color: new Color().rgb(0xFFFFFFFF),
-      pos: Luxe.screen.mid,
+      color: new Color(),
+      pos: new Vector().copy_from(newPos)
     });
+
+    testSprite.add(mover);
     testSprite.add(newSprite);
   }
 
