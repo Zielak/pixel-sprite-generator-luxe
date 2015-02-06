@@ -26,8 +26,6 @@ class PixelSprite extends Component
   public var width(get, null):Int;
   public var height(get, null):Int;
 
-  @:isVar public var rendered(default, null):Bool = false;
-
   var pixelsData2D:Array<Array<Color>>;
   var pixelsInt:Array<Int>;
   var pixelsIntSplit:Array<Int>;
@@ -53,7 +51,7 @@ class PixelSprite extends Component
     _options.name = 'psg';
     super(_options);
 
-    mask = _options.mask; // cast(_options.mask, Mask);
+    mask = _options.mask;
 
       // Default values
     isColored       = (_options.isColored == null) ? false : _options.isColored;
@@ -68,21 +66,22 @@ class PixelSprite extends Component
     pixelsIntSplit = new Array<Int>();
 
 
-    pixelsData2D = new Array<Array<psg.Color>>();
+    pixelsData2D = new Array<Array<Color>>();
     for(i in 0...height)
     {
-      pixelsData2D[i] = new Array<psg.Color>();
+      pixelsData2D[i] = new Array<Color>();
     }
   }
 
 
-  /**
-   * The init method calls all functions required to generate the sprite.
-   */
+  override function init():Void
+  {
+    renderPixelData();
+  }
+
   override function onadded():Void
   {
     _sprite = cast entity;
-    // _sprite.texture = new Texture(Luxe.resources, texture);
 
     initSprite();
     initData();
@@ -338,10 +337,10 @@ class PixelSprite extends Component
   */
   function renderPixelData():Void
   {
-    // Prepare all the variables first
+      // Prepare all the variables first
     var isVerticalGradient:Bool = Math.random() > 0.5;
     var saturation:Float        = Math.max( Math.min( Math.random() * saturation, 1 ), 0);
-    var hue:Float               = Math.random();
+    var hue:Float               = Math.random()*360;
 
     var u:Int = 0;
     var v:Int = 0;
@@ -354,11 +353,10 @@ class PixelSprite extends Component
     var index:Int = 0;
 
     var color:Color;
-    var colorHSL:ColorHSL;
 
     var brightness:Float = 0;
 
-    // Target XY of BitmapData pixels
+      // Target XY of BitmapData pixels
     var x:Int = 0;
     var y:Int = 0;
 
@@ -374,8 +372,6 @@ class PixelSprite extends Component
       vlen = height;
     }
 
-    // _sprite.texture.lock();
-
     for (u in 0...ulen)
     {
       // Create a non-uniform random number between 0 and 1 (lower numbers more likely)
@@ -386,7 +382,7 @@ class PixelSprite extends Component
       // Only change the color sometimes (values above 0.8 are less likely than others)
       if (isNewColor > (1 - colorVariations))
       {
-        hue = Math.random();
+        hue = Math.random()*360;
       }
 
       for (v in 0...vlen)
@@ -406,7 +402,7 @@ class PixelSprite extends Component
           y     = v;
         }
 
-        color = new Color(1,1,1,1);
+        color = new Color();
 
         if (val != 0)
         {
@@ -415,9 +411,7 @@ class PixelSprite extends Component
             // Fade brightness away towards the edges
             brightness = Math.sin((u / ulen) * Math.PI) * (1 - brightnessNoise) + Math.random() * brightnessNoise;
 
-            // Get the RGB color value
-            colorHSL = new ColorHSL(hue, saturation, brightness);
-            color.fromColorHSV( colorHSL );
+            color.fromColorHSL( new ColorHSL(hue, saturation, brightness) );
 
             // If this is an edge, then darken the pixel
             if (val == -1)
@@ -433,13 +427,15 @@ class PixelSprite extends Component
             // Not colored, simply output black
             if (val == -1)
             {
-              color.set(0,0,0,1);
+              color.r = 0;
+              color.g = 0;
+              color.b = 0;
+              color.a = 1;
             }
           }
         }
         else
         {
-          // transparent pixel plz
           color.a = 0;
         }
         pixelsData2D[y][x] = color;
@@ -462,36 +458,20 @@ class PixelSprite extends Component
       }
     };
 
-    // trace('pixelsIntSplit.length = ${pixelsIntSplit.length}');
-
       // Now pass it over to UInt8Array thing
-    pixelsUInt8 = new UInt8Array(data.length*4);
+    pixelsUInt8 = new UInt8Array(pixelsIntSplit);
     pixelsUInt8.set(pixelsIntSplit);
 
-    // trace('data.length*4 = ${data.length*4}');
-    // trace('pixelsUInt8.length = ${pixelsUInt8.length}');
-
-    // trace('pixelsUInt8' + pixelsUInt8);
-
-    // trace(' ## Texture.load_from_pixels(${name+'.pixels'}, ${width}, ${height}, ...)');
+    // TODO: Isn't this cache:false the reason why Chrome runs slower?
+    // Shouldn't I use one big texture for all PSG,
+    // instead of new texture per new sprite?
     _sprite.texture = Texture.load_from_pixels(_sprite.name+name+'.pixels', width, height, pixelsUInt8, false);
-    _sprite.texture.filter = nearest;
 
-    rendered = true;
-
-    // _sprite.texture.set_pixel( new Vector(x, y) , color );
-    // pixelsInt.push(color.getARGB());
-
-    // trace('render() Done');
+    _sprite.texture.set_onload(function(t:Texture):Void{
+      t.filter = nearest;
+    });
   }
 
-  override function update(_)
-  {
-    if(_sprite.inited && !rendered)
-    {
-      renderPixelData();
-    }
-  }
 
 
   function get_width():Int{
@@ -601,95 +581,3 @@ typedef MaskOptions = {
   @:optional var mirrorX:Bool;
   @:optional var mirrorY:Bool;
 }
-
-/**
- * COLOR
- */
-class Color 
-{
-
-  public var r:Float;
-  public var g:Float;
-  public var b:Float;
-  public var a:Float;
-
-  public function new(r_:Float, g_:Float, b_:Float, ?a_:Float = 1.0):Void
-  {
-    a = a_;
-    r = r_;
-    g = g_;
-    b = b_;
-  }
-
-
-  /**
-   * Update color with RGB values
-   * @param r_ Red
-   * @param g_ Green
-   * @param b_ Blue
-   */
-  public function set(r_:Float, g_:Float, b_:Float, ?a_:Float = 1.0):Void
-  {
-    a = a_;
-    r = r_;
-    g = g_;
-    b = b_;
-  }
-
-
-  /**
-   * Get RGB color
-   * @return Int in format 0xRRGGBB
-   */
-  public function getRGB():Int
-  {
-    var rgb:Int;
-
-    rgb = (Math.round(r*0xff) << 16) | (Math.round(g*0xff) << 8) | (Math.round(b*0xff));
-    return rgb;
-  }
-
-  /**
-   * Get ARGB color
-   * @return Int in format 0xAARRGGBB
-   */
-  public function getARGB():Int
-  {
-    var rgb:Int;
-
-    rgb = (Math.round(a*0xff) << 24) | (Math.round(r*0xff) << 16) | (Math.round(g*0xff) << 8) | (Math.round(b*0xff));
-    return rgb;
-  }
-
-
-  /**
-   * Update color with HSL values
-   * @param h Hue
-   * @param s Saturation
-   * @param l Light
-   */
-  public function setHSL(h:Float, s:Float, l:Float):Void
-  {
-    var i:Float;
-    var f:Float;
-    var p:Float;
-    var q:Float;
-    var t:Float;
-
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = l * (1 - s);
-    q = l * (1 - f * s);
-    t = l * (1 - (1 - f) * s);
-    
-    switch (i % 6) {
-      case 0: r = l; g = t; b = p;
-      case 1: r = q; g = l; b = p;
-      case 2: r = p; g = l; b = t;
-      case 3: r = p; g = q; b = l;
-      case 4: r = t; g = p; b = l;
-      case 5: r = l; g = p; b = q;
-    }
-  }
-}
-

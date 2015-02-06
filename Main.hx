@@ -53,7 +53,7 @@ class Main extends luxe.Game {
   }
   
   override function ready () {
-    Luxe.renderer.clear_color = new Color().rgb(0xDDDDDD);
+    Luxe.renderer.clear_color = new Color().rgb(0xEEEEEE);
 
     initTestMasks();
     showExamples();
