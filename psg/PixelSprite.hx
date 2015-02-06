@@ -1,15 +1,13 @@
 
 package psg;
 
-import luxe.Sprite;
+import luxe.Color;
 import luxe.Component;
-import luxe.Vector;
-import luxe.Sprite;
 import luxe.options.SpriteOptions;
-
-import snow.utils.UInt8Array;
-
+import luxe.Sprite;
+import luxe.Vector;
 import phoenix.Texture;
+import snow.utils.UInt8Array;
 
 class PixelSprite extends Component
 {
@@ -356,6 +354,7 @@ class PixelSprite extends Component
     var index:Int = 0;
 
     var color:Color;
+    var colorHSL:ColorHSL;
 
     var brightness:Float = 0;
 
@@ -417,7 +416,8 @@ class PixelSprite extends Component
             brightness = Math.sin((u / ulen) * Math.PI) * (1 - brightnessNoise) + Math.random() * brightnessNoise;
 
             // Get the RGB color value
-            color.setHSL( hue, saturation, brightness );
+            colorHSL = new ColorHSL(hue, saturation, brightness);
+            color.fromColorHSV( colorHSL );
 
             // If this is an edge, then darken the pixel
             if (val == -1)
@@ -433,10 +433,7 @@ class PixelSprite extends Component
             // Not colored, simply output black
             if (val == -1)
             {
-              color.r = 0;
-              color.g = 0;
-              color.b = 0;
-              color.a = 1;
+              color.set(0,0,0,1);
             }
           }
         }
@@ -543,3 +540,156 @@ typedef PixelSpriteOptions = {
   @:optional var brightnessNoise:Float;
   @:optional var saturation:Float;
 }
+
+
+
+
+
+/**
+ * MASK
+ */
+class Mask 
+{
+
+  public var data:Array<Int>;
+  public var width:Int;
+  public var height:Int;
+  public var mirrorX:Bool;
+  public var mirrorY:Bool;
+  
+  /**
+   *   The Mask class defines a 2D template form which sprites can be generated.
+   *
+   *   @class Mask
+   *   @constructor
+   *   @param {data} Integer array describing which parts of the sprite should be
+   *   empty, body, and border. The mask only defines a semi-ridgid stucture
+   *   which might not strictly be followed based on randomly generated numbers.
+   *
+   *      -1 = Always border (black)
+   *       0 = Empty
+   *       1 = Randomly chosen Empty/Body
+   *       2 = Randomly chosen Border/Body
+   *
+   *   @param {width} Width of the mask data array
+   *   @param {height} Height of the mask data array
+   *   @param {mirrorX} A boolean describing whether the mask should be mirrored on the x axis
+   *   @param {mirrorY} A boolean describing whether the mask should be mirrored on the y axis
+   */
+  public function new( options:MaskOptions ):Void
+  {
+    data      = options.data;
+    width     = options.width;
+    height    = options.height;
+
+    mirrorX   = (options.mirrorX == null) ? true : options.mirrorX;
+    mirrorY   = (options.mirrorY == null) ? true : options.mirrorY;
+  }
+
+  public function toString():String
+  {
+    return 'size: [${width}, ${height}]; data: ${data}';
+  }
+
+}
+
+typedef MaskOptions = {
+  var data:Array<Int>;
+  var width:Int;
+  var height:Int;
+
+  @:optional var mirrorX:Bool;
+  @:optional var mirrorY:Bool;
+}
+
+/**
+ * COLOR
+ */
+class Color 
+{
+
+  public var r:Float;
+  public var g:Float;
+  public var b:Float;
+  public var a:Float;
+
+  public function new(r_:Float, g_:Float, b_:Float, ?a_:Float = 1.0):Void
+  {
+    a = a_;
+    r = r_;
+    g = g_;
+    b = b_;
+  }
+
+
+  /**
+   * Update color with RGB values
+   * @param r_ Red
+   * @param g_ Green
+   * @param b_ Blue
+   */
+  public function set(r_:Float, g_:Float, b_:Float, ?a_:Float = 1.0):Void
+  {
+    a = a_;
+    r = r_;
+    g = g_;
+    b = b_;
+  }
+
+
+  /**
+   * Get RGB color
+   * @return Int in format 0xRRGGBB
+   */
+  public function getRGB():Int
+  {
+    var rgb:Int;
+
+    rgb = (Math.round(r*0xff) << 16) | (Math.round(g*0xff) << 8) | (Math.round(b*0xff));
+    return rgb;
+  }
+
+  /**
+   * Get ARGB color
+   * @return Int in format 0xAARRGGBB
+   */
+  public function getARGB():Int
+  {
+    var rgb:Int;
+
+    rgb = (Math.round(a*0xff) << 24) | (Math.round(r*0xff) << 16) | (Math.round(g*0xff) << 8) | (Math.round(b*0xff));
+    return rgb;
+  }
+
+
+  /**
+   * Update color with HSL values
+   * @param h Hue
+   * @param s Saturation
+   * @param l Light
+   */
+  public function setHSL(h:Float, s:Float, l:Float):Void
+  {
+    var i:Float;
+    var f:Float;
+    var p:Float;
+    var q:Float;
+    var t:Float;
+
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = l * (1 - s);
+    q = l * (1 - f * s);
+    t = l * (1 - (1 - f) * s);
+    
+    switch (i % 6) {
+      case 0: r = l; g = t; b = p;
+      case 1: r = q; g = l; b = p;
+      case 2: r = p; g = l; b = t;
+      case 3: r = p; g = q; b = l;
+      case 4: r = t; g = p; b = l;
+      case 5: r = l; g = p; b = q;
+    }
+  }
+}
+

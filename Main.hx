@@ -34,7 +34,7 @@ class Main extends luxe.Game {
 
   var testSprite:Sprite;
 
-  public static inline var SPRITE_ROW_COUNT:Int = 2;
+  public static inline var SPRITE_COUNT:Int = 2;
   public static inline var SPRITE_XMAX:Int = 500;
   public static inline var SPRITE_SPACING:Int = 10;
   public static inline var SPRITE_SCALE:Float = 3;
@@ -205,7 +205,7 @@ class Main extends luxe.Game {
 
     placeText("Colored ship sprites");
 
-    for (i in 0...11*SPRITE_ROW_COUNT)
+    for (i in 0...SPRITE_COUNT)
     {
       placeSprite({
         mask: spaceship,
@@ -219,7 +219,7 @@ class Main extends luxe.Game {
 
     placeText("Colored humanoids (with low saturation)");
 
-    for (i in 0...9*SPRITE_ROW_COUNT)
+    for (i in 0...SPRITE_COUNT)
     {
       placeSprite({
         mask: humanoid,
@@ -234,7 +234,7 @@ class Main extends luxe.Game {
 
     placeText("Colored ship sprites (with many color variations per ship)");
 
-    for (i in 0...11*SPRITE_ROW_COUNT)
+    for (i in 0...SPRITE_COUNT)
     {
       placeSprite({
         mask: spaceship,
@@ -250,7 +250,7 @@ class Main extends luxe.Game {
 
     placeText("Colored dragon sprites");
 
-    for (i in 0...11*SPRITE_ROW_COUNT)
+    for (i in 0...SPRITE_COUNT)
     {
       placeSprite({
         mask: dragon,
@@ -265,7 +265,7 @@ class Main extends luxe.Game {
 
     placeText("Black & white robot sprites");
 
-    for (i in 0...7*SPRITE_ROW_COUNT)
+    for (i in 0...SPRITE_COUNT)
     {
       placeSprite({
         mask: robot
