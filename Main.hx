@@ -34,7 +34,7 @@ class Main extends luxe.Game {
 
   // var testSprite:Sprite;
 
-  public static inline var SPRITE_COUNT:Int = 2;
+  public static inline var SPRITE_COUNT:Int = 1;
   public static inline var SPRITE_XMAX:Int = 500;
   public static inline var SPRITE_SPACING:Int = 10;
   public static inline var SPRITE_SCALE:Float = 3;
@@ -45,10 +45,6 @@ class Main extends luxe.Game {
 
   override function config(config:luxe.AppConfig):luxe.AppConfig
   {
-    config.window.width = 600;
-    config.window.height = 800;
-    config.window.resizable = false;
-            
     return config;
   }
   

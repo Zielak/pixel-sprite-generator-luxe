@@ -1,4 +1,16 @@
 {
+
+  luxe:{
+    window: {
+      width:600,
+      height:800,
+      title:'Pixel Sprite Generator',
+      fullscreen:false,
+      resizable:false,
+      borderless:false
+    }
+  },
+
   project : {
     name : 'PixelSpriteGenerator',
     version : '0.0.3',
@@ -20,4 +32,5 @@
     }
 
   }
+  
 }

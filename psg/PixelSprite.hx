@@ -1,16 +1,17 @@
-
 package psg;
 
 import luxe.Color;
 import luxe.Component;
 import luxe.options.SpriteOptions;
+import luxe.Rectangle;
 import luxe.Sprite;
 import luxe.Vector;
 import phoenix.Texture;
-import snow.utils.UInt8Array;
+import snow.api.buffers.Uint8Array;
 
 class PixelSprite extends Component
 {
+
   var _sprite:Sprite;
 
   public var data:Array<Int>;
@@ -29,7 +30,63 @@ class PixelSprite extends Component
   var pixelsData2D:Array<Array<Color>>;
   var pixelsInt:Array<Int>;
   var pixelsIntSplit:Array<Int>;
-  var pixelsUInt8:UInt8Array;
+  var pixelsUInt8:Uint8Array;
+
+// ##### STATIC ######
+  
+  static public var inited:Bool = false;
+  
+  // Static texture for all the sprites
+  static var texture:Texture;
+
+  // Remember occupied spaces
+  static var occupied:Array<Rectangle>;
+
+  // Temp pixels map
+  static var _u8a:Uint8Array;
+
+  static public function initGenerator()
+  {
+    // TODO: Manage bigger texture size
+    texture = new Texture({
+      id: 'pixel-sprite-generator',
+      width: 128,
+      height: 128
+    });
+    texture.filter_min = texture.filter_mag = FilterType.nearest;
+
+    occupied = new Array<Rectangle>();
+  }
+
+  /**
+   * Add new pixels to the texture and retrieve its UV
+   * @param pixels generated pixels
+   * @param width  sprite's width
+   * @param height sprite's height
+   * @return UV coords for the sprite
+   */
+  static public function addPixels(pixels:Uint8Array, width:Int, height:Int):Rectangle
+  {
+    trace('addPixels');
+    var place:Rectangle = getSpace(width, height);
+
+    // Fetch all pixels
+    _u8a = texture.fetch(_u8a);
+
+    // Add new tiny sprite
+    
+
+    // Submit whole updated pixels to texture
+    texture.submit(pixels);
+
+    return place;
+  }
+
+  static function getSpace(width:Int, height:Int):Rectangle
+  {
+    var rect:Rectangle = new Rectangle(0,0,width,height);
+    return rect;
+  }
 
 
   /**
@@ -48,6 +105,10 @@ class PixelSprite extends Component
  
   override public function new( _options:PixelSpriteOptions ):Void
   {
+    if(!PixelSprite.inited){
+      PixelSprite.initGenerator();
+    }
+
     _options.name = 'psg';
     super(_options);
 
@@ -78,6 +139,7 @@ class PixelSprite extends Component
   {
     renderPixelData();
   }
+
 
   override function onadded():Void
   {
@@ -458,18 +520,16 @@ class PixelSprite extends Component
       }
     };
 
-      // Now pass it over to UInt8Array thing
-    pixelsUInt8 = new UInt8Array(pixelsIntSplit);
+      // Now pass it over to Uint8Array thing
+    pixelsUInt8 = new Uint8Array(pixelsIntSplit);
     pixelsUInt8.set(pixelsIntSplit);
 
     // TODO: Isn't this cache:false the reason why Chrome runs slower?
     // Shouldn't I use one big texture for all PSG,
     // instead of new texture per new sprite?
-    _sprite.texture = Texture.load_from_pixels(_sprite.name+name+'.pixels', width, height, pixelsUInt8, false);
+    PixelSprite.addPixels(pixelsUInt8, width, height);
 
-    _sprite.texture.set_onload(function(t:Texture):Void{
-      t.filter = nearest;
-    });
+
   }
 
 
