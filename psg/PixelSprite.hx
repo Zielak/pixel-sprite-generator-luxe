@@ -32,7 +32,7 @@ class PixelSprite extends Component
 
 // ##### STATIC ######
   
-  static public var inited:Bool = false;
+  static var _inited:Bool = false;
   
   // Static texture for all the sprites
   static public var texture:Texture;
@@ -42,15 +42,23 @@ class PixelSprite extends Component
 
   static public function initGenerator()
   {
+    if(_inited){
+      texture.destroy(true);
+      sprites = null;
+      _inited = false;
+    }
+
     // TODO: Manage bigger texture size
     texture = new Texture({
       id: 'pixel-sprite-generator',
-      width: 128,
-      height: 128
+      width: 64,
+      height: 64
     });
     texture.filter_min = texture.filter_mag = FilterType.nearest;
 
     sprites = new Array<Rectangle>();
+
+    _inited = true;
   }
 
   /**
@@ -64,42 +72,40 @@ class PixelSprite extends Component
   {
     var _textureU8:Uint8Array = new Uint8Array(texture.width * texture.height * 4);
     var _pixelsRow:Array<Int> = new Array<Int>();
-    for(i in 0...pixels[0].length){
-      _pixelsRow.push(0);
-    }
 
     // Fetch all pixels
-    _textureU8 = texture.fetch(_textureU8);
+    texture.fetch(_textureU8);
 
     // Find empty spot
-    var place:Rectangle = getSpace(pixels.length, pixels[0].length);
+    var place:Rectangle = getSpace(pixels[0].length, pixels.length);
 
-    var _rgb:Int;
+    var offset:Int;
 
     // Place new sprite to texture row by row
-    for (i in 0...pixels.length)
+    for (_y in 0...pixels.length)
     {
-      for (j in 0...pixels[i].length)
+      _pixelsRow = new Array<Int>();
+      for (_x in 0...pixels[_y].length)
       {
-        _pixelsRow[j] = Math.round(pixels[i][j].r*0xff);
-        _pixelsRow[j+1] = Math.round(pixels[i][j].g*0xff);
-        _pixelsRow[j+2] = Math.round(pixels[i][j].b*0xff);
-        _pixelsRow[j+3] = Math.round(pixels[i][j].a*0xff);
+        _pixelsRow.push( Math.round(pixels[_y][_x].r*0xff) );
+        _pixelsRow.push( Math.round(pixels[_y][_x].g*0xff) );
+        _pixelsRow.push( Math.round(pixels[_y][_x].b*0xff) );
+        _pixelsRow.push( Math.round(pixels[_y][_x].a*0xff) );
 
-        // _rgb = Math.round( pixels[i][j].r*0xff );
-        // _rgb = Math.round( (_rgb << 8) + pixels[i][j].g*0xff );
-        // _rgb = Math.round( (_rgb << 8) + pixels[i][j].b*0xff );
-        // _rgb = Math.round( (_rgb << 8) + pixels[i][j].a*0xff );
+        // _rgb = Math.round( pixels[_y][_x].r*0xff );
+        // _rgb = Math.round( (_rgb << 8) + pixels[_y][_x].g*0xff );
+        // _rgb = Math.round( (_rgb << 8) + pixels[_y][_x].b*0xff );
+        // _rgb = Math.round( (_rgb << 8) + pixels[_y][_x].a*0xff );
 
-
-        // Std.int(i*4 + place.x*4)
-#if web
-        _textureU8.set(_pixelsRow, Std.int(i + place.x) );
-#else
-        _textureU8.set(null, _pixelsRow, Std.int(i + place.x) );
-#end
-        
       }
+
+      offset = Std.int( (_y*texture.width*4) + place.x*4 );
+#if web
+      _textureU8.set(_pixelsRow, offset );
+#else
+      _textureU8.set(null, _pixelsRow, offset );
+#end
+
     };
 
     // Submit whole updated pixels to texture
@@ -163,9 +169,7 @@ class PixelSprite extends Component
  
   override public function new( _options:PixelSpriteOptions ):Void
   {
-    if(!PixelSprite.inited){
-      PixelSprite.initGenerator();
-    }
+    PixelSprite.initGenerator();
 
     _options.name = 'psg';
     super(_options);
