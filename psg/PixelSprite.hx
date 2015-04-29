@@ -31,32 +31,44 @@ class PixelSprite extends Component
   var pixelsUInt8:Uint8Array;
 
 // ##### STATIC ######
+
+  static public var TEXTURE_W:Int = 128;
+  static public var TEXTURE_H:Int = 128;
   
   static var _inited:Bool = false;
+  static var count:Int = 0;
   
   // Static texture for all the sprites
   static public var texture:Texture;
 
-  // Remember occupied spaces
-  static var sprites:Array<Rectangle>;
+  // Generated images in Uint8Array
+  static var images:Array<Uint8Array>;
+
+  // Remember UV of each generated texture
+  static var uvs:Array<Rectangle>;
 
   static public function initGenerator()
   {
-    if(_inited){
+    if(_inited)
+    {
       texture.destroy(true);
-      sprites = null;
-      _inited = false;
+
+      images   = null;
+      uvs      = null;
+      count    = 0;
+      _inited  = false;
     }
 
     // TODO: Manage bigger texture size
     texture = new Texture({
       id: 'pixel-sprite-generator',
-      width: 64,
-      height: 64
+      width: TEXTURE_W,
+      height: TEXTURE_H
     });
     texture.filter_min = texture.filter_mag = FilterType.nearest;
 
-    sprites = new Array<Rectangle>();
+    images   = new Array<Uint8Array>();
+    uvs      = new Array<Rectangle>();
 
     _inited = true;
   }
@@ -70,48 +82,51 @@ class PixelSprite extends Component
    */
   static public function addPixels(pixels:Array<Array<Color>>):Rectangle
   {
-    var _textureU8:Uint8Array = new Uint8Array(texture.width * texture.height * 4);
-    var _pixelsRow:Array<Int> = new Array<Int>();
+    var _w:Int = pixels[0].length;
+    var _h:Int = pixels.length;
 
-    // Fetch all pixels
-    texture.fetch(_textureU8);
+    var _imageU8:Uint8Array = new Uint8Array(_w * _h * 4);
+    var _pixelsInt:Array<Int> = new Array<Int>();
 
     // Find empty spot
-    var place:Rectangle = getSpace(pixels[0].length, pixels.length);
+    var _uv:Rectangle = getSpace(_w, _h);
 
     var offset:Int;
 
     // Place new sprite to texture row by row
-    for (_y in 0...pixels.length)
+    for (_y in 0..._h)
     {
-      _pixelsRow = new Array<Int>();
-      for (_x in 0...pixels[_y].length)
+      // _pixelsInt = new Array<Int>();
+      for (_x in 0..._w)
       {
-        _pixelsRow.push( Math.round(pixels[_y][_x].r*0xff) );
-        _pixelsRow.push( Math.round(pixels[_y][_x].g*0xff) );
-        _pixelsRow.push( Math.round(pixels[_y][_x].b*0xff) );
-        _pixelsRow.push( Math.round(pixels[_y][_x].a*0xff) );
-
-        // _rgb = Math.round( pixels[_y][_x].r*0xff );
-        // _rgb = Math.round( (_rgb << 8) + pixels[_y][_x].g*0xff );
-        // _rgb = Math.round( (_rgb << 8) + pixels[_y][_x].b*0xff );
-        // _rgb = Math.round( (_rgb << 8) + pixels[_y][_x].a*0xff );
+        _pixelsInt.push( Math.round(pixels[_y][_x].r*0xff) );
+        _pixelsInt.push( Math.round(pixels[_y][_x].g*0xff) );
+        _pixelsInt.push( Math.round(pixels[_y][_x].b*0xff) );
+        _pixelsInt.push( Math.round(pixels[_y][_x].a*0xff) );
 
       }
 
-      offset = Std.int( (_y*texture.width*4) + place.x*4 );
-#if web
-      _textureU8.set(_pixelsRow, offset );
-#else
-      _textureU8.set(null, _pixelsRow, offset );
-#end
+      // offset = Std.int( (_y * _w * 4) /*+ _uv.x * 4*/ );
 
     };
 
-    // Submit whole updated pixels to texture
-    texture.submit(_textureU8);
+#if web
+    _imageU8.set( _pixelsInt );
+#else
+    _imageU8.set( null, _pixelsInt );
+#end
 
-    return place;
+    images.push(_imageU8);
+    uvs.push(_uv);
+
+    // Submit whole updated pixels to texture
+    // texture.submit(_imageU8);
+
+    updateTexture();
+
+    count ++;
+
+    return _uv;
   }
 
   static function getSpace(width:Int, height:Int):Rectangle
@@ -128,8 +143,8 @@ class PixelSprite extends Component
       found = true;
 
       // Check if overlapping for each occupied space 
-      for(_r in sprites){
-        found = found && ( !rect.overlaps(_r) );
+      for(_uv in uvs){
+        found = found && ( !rect.overlaps(_uv) );
       }
 
       // Try with another space
@@ -145,11 +160,62 @@ class PixelSprite extends Component
         }
       }
     }
-    trace('found = ${found}; at (${rect.x}, ${rect.y}), size (${rect.w}, ${rect.h})');
-
-    sprites.push(rect);
+    // trace('found = ${found}; at (${rect.x}, ${rect.y}), size (${rect.w}, ${rect.h})');
 
     return rect;
+  }
+
+  /**
+   * Merge all created images into one "atlas"
+   */
+  static function updateTexture()
+  {
+    // Main U8Array for the texture
+    var _textureU8 = new Uint8Array(texture.width * texture.height * 4);
+
+    var _imageU8:Uint8Array;
+    var _pixelsInt:Array<Int>;
+
+    var _uv:Rectangle;
+
+    var _w:Int;
+    var _h:Int;
+
+    var offset:Int;
+
+    // For every registered sprite
+    for(i in 0...uvs.length)
+    {
+      _imageU8 = images[i];
+      _uv = uvs[i];
+
+      _w = Math.floor(_uv.w);
+      _h = Math.floor(_uv.h);
+
+      // Pass it to Int array so we can set it to main U8Array
+      for(_y in 0..._h)
+      {
+
+        _pixelsInt = new Array<Int>();
+
+        for (_x in 0..._w)
+        {
+          _pixelsInt.push( _imageU8[((_x*4)+_y*_w*4)] );
+          _pixelsInt.push( _imageU8[((_x*4)+_y*_w*4)+1] );
+          _pixelsInt.push( _imageU8[((_x*4)+_y*_w*4)+2] );
+          _pixelsInt.push( _imageU8[((_x*4)+_y*_w*4)+3] );
+        }
+
+        // offset = Std.int( (_uv.x*4) + (texture.width*4*_y) + (_uv.y*4) +  );
+        offset = Std.int( texture.width*_y*4 + _uv.x*4 + texture.width*_uv.y*4 );
+        _textureU8.set(_pixelsInt, offset);
+
+      }
+
+    }
+
+    texture.submit(_textureU8);
+
   }
 
 

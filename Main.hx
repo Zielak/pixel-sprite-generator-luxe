@@ -34,7 +34,7 @@ class Main extends luxe.Game {
 
   // var testSprite:Sprite;
 
-  public static inline var SPRITE_COUNT:Int = 1;
+  public static inline var SPRITE_COUNT:Int = 12;
   public static inline var SPRITE_XMAX:Int = 500;
   public static inline var SPRITE_SPACING:Int = 10;
   public static inline var SPRITE_SCALE:Float = 3;
@@ -284,15 +284,15 @@ class Main extends luxe.Game {
 
     // Example 5
 
-    // placeText("Black & white robot sprites");
+    placeText("Black & white robot sprites");
 
-    // for (i in 0...SPRITE_COUNT)
-    // {
-    //   placeSprite({
-    //     mask: robot
-    //   });
-    // }
-    // prepareForNextExample();
+    for (i in 0...SPRITE_COUNT)
+    {
+      placeSprite({
+        mask: robot
+      });
+    }
+    prepareForNextExample();
 
 
   }
@@ -350,8 +350,8 @@ class Main extends luxe.Game {
   function showPSGTexture()
   {
     var _sprite:Sprite = new Sprite({
-      pos: Luxe.screen.mid,
-      scale: new Vector(4,4),
+      pos: new Vector(Luxe.screen.w-PixelSprite.TEXTURE_W, Luxe.screen.h-PixelSprite.TEXTURE_H),
+      scale: new Vector(2,2),
       texture: PixelSprite.texture,
       size: new Vector(PixelSprite.texture.width, PixelSprite.texture.height),
       depth: 0,
