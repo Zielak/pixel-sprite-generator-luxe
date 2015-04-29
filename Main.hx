@@ -48,7 +48,7 @@ class Main extends luxe.Game {
     return config;
   }
   
-  override function ready () {
+  override function ready() {
     Luxe.renderer.clear_color = new Color().rgb(0xEEEEEE);
 
     initTestMasks();
@@ -56,7 +56,7 @@ class Main extends luxe.Game {
   }
 
 
-  override function onkeydown(e:KeyEvent):Void
+  override function onkeydown(e:KeyEvent)
   {
     if(e.keycode == Key.space)
     {
@@ -65,7 +65,7 @@ class Main extends luxe.Game {
     }
   }
 
-  override function ontouchdown(e:TouchEvent):Void
+  override function ontouchdown(e:TouchEvent)
   {
     Luxe.scene.empty();
     showExamples();
@@ -74,7 +74,7 @@ class Main extends luxe.Game {
 
 
 
-  function initTestMasks():Void
+  function initTestMasks()
   {
     spaceship = new psg.Mask({
       data: [
@@ -162,7 +162,7 @@ class Main extends luxe.Game {
     });
   }
 
-  function test1():Void
+  function test1()
   {    
     // if(testSprite != null)
     // {
@@ -178,7 +178,7 @@ class Main extends luxe.Game {
     }
   }
 
-  function placeNewSprite():Void
+  function placeNewSprite()
   {
     var newPos:Vector = new Vector();
     newPos.x = Math.random()*Luxe.screen.w/2 + Luxe.screen.w/4;
@@ -209,7 +209,7 @@ class Main extends luxe.Game {
   }
 
 
-  function showExamples():Void
+  function showExamples()
   {
     var i:Int = 0;
     _y = SPRITE_SPACING;
@@ -293,7 +293,7 @@ class Main extends luxe.Game {
   }
 
 
-  private function placeText( str:String ):Void
+  private function placeText( str:String )
   {
     var text:Text = new Text({
       text: str,
@@ -311,7 +311,7 @@ class Main extends luxe.Game {
    * Enlarges and places sprite to the view.
    * @return
    */
-  private function placeSprite( _options:psg.PixelSpriteOptions ):Void
+  private function placeSprite( _options:psg.PixelSpriteOptions )
   {
     var newSprite:PixelSprite = new PixelSprite(_options);
     var spr:Sprite = new Sprite({
@@ -334,7 +334,7 @@ class Main extends luxe.Game {
   }
 
 
-  private function prepareForNextExample():Void
+  private function prepareForNextExample()
   {
     _x = SPRITE_SPACING;
     _y += 50;
