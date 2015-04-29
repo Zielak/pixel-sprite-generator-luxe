@@ -53,6 +53,7 @@ class Main extends luxe.Game {
 
     initTestMasks();
     showExamples();
+    showPSGTexture();
   }
 
 
@@ -338,6 +339,19 @@ class Main extends luxe.Game {
   {
     _x = SPRITE_SPACING;
     _y += 50;
+  }
+
+
+
+  function showPSGTexture()
+  {
+    var _sprite:Sprite = new Sprite({
+      pos: Luxe.screen.mid,
+      scale: new Vector(2,2),
+      texture: PixelSprite.texture,
+      size: new Vector(PixelSprite.texture.width, PixelSprite.texture.height),
+      depth: 0,
+    });
   }
   
   

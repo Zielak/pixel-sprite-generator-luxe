@@ -28,8 +28,6 @@ class PixelSprite extends Component
   public var height(get, null):Int;
 
   var pixelsData2D:Array<Array<Color>>;
-  var pixelsInt:Array<Int>;
-  var pixelsIntSplit:Array<Int>;
   var pixelsUInt8:Uint8Array;
 
 // ##### STATIC ######
@@ -37,13 +35,10 @@ class PixelSprite extends Component
   static public var inited:Bool = false;
   
   // Static texture for all the sprites
-  static var texture:Texture;
+  static public var texture:Texture;
 
   // Remember occupied spaces
-  static var occupied:Array<Rectangle>;
-
-  // Temp pixels map
-  static var _u8a:Uint8Array;
+  static var sprites:Array<Rectangle>;
 
   static public function initGenerator()
   {
@@ -55,7 +50,7 @@ class PixelSprite extends Component
     });
     texture.filter_min = texture.filter_mag = FilterType.nearest;
 
-    occupied = new Array<Rectangle>();
+    sprites = new Array<Rectangle>();
   }
 
   /**
@@ -65,19 +60,50 @@ class PixelSprite extends Component
    * @param height sprite's height
    * @return UV coords for the sprite
    */
-  static public function addPixels(pixels:Uint8Array, width:Int, height:Int):Rectangle
+  static public function addPixels(pixels:Array<Array<Color>>):Rectangle
   {
-    trace('addPixels');
-    var place:Rectangle = getSpace(width, height);
+    var _textureU8:Uint8Array = new Uint8Array(texture.width * texture.height * 4);
+    var _pixelsRow:Array<Int> = new Array<Int>();
+    for(i in 0...pixels[0].length){
+      _pixelsRow.push(0);
+    }
 
     // Fetch all pixels
-    _u8a = texture.fetch(_u8a);
+    _textureU8 = texture.fetch(_textureU8);
 
-    // Add new tiny sprite
-    
+    // Find empty spot
+    var place:Rectangle = getSpace(pixels.length, pixels[0].length);
+
+    var _rgb:Int;
+
+    // Place new sprite to texture row by row
+    for (i in 0...pixels.length)
+    {
+      for (j in 0...pixels[i].length)
+      {
+        _pixelsRow[j] = Math.round(pixels[i][j].r*0xff);
+        _pixelsRow[j+1] = Math.round(pixels[i][j].g*0xff);
+        _pixelsRow[j+2] = Math.round(pixels[i][j].b*0xff);
+        _pixelsRow[j+3] = Math.round(pixels[i][j].a*0xff);
+
+        // _rgb = Math.round( pixels[i][j].r*0xff );
+        // _rgb = Math.round( (_rgb << 8) + pixels[i][j].g*0xff );
+        // _rgb = Math.round( (_rgb << 8) + pixels[i][j].b*0xff );
+        // _rgb = Math.round( (_rgb << 8) + pixels[i][j].a*0xff );
+
+
+        // Std.int(i*4 + place.x*4)
+#if web
+        _textureU8.set(_pixelsRow, Std.int(i + place.x) );
+#else
+        _textureU8.set(null, _pixelsRow, Std.int(i + place.x) );
+#end
+        
+      }
+    };
 
     // Submit whole updated pixels to texture
-    texture.submit(pixels);
+    texture.submit(_textureU8);
 
     return place;
   }
@@ -85,6 +111,38 @@ class PixelSprite extends Component
   static function getSpace(width:Int, height:Int):Rectangle
   {
     var rect:Rectangle = new Rectangle(0,0,width,height);
+
+    var found:Bool = false;
+    var _x:Int = 0;
+    var _y:Int = 0;
+
+    while(!found)
+    {
+      rect.set(_x, _y);
+      found = true;
+
+      // Check if overlapping for each occupied space 
+      for(_r in sprites){
+        found = found && ( !rect.overlaps(_r) );
+      }
+
+      // Try with another space
+      _x ++;
+      if(_x + width >= texture.width){
+        _x = 0;
+        _y++;
+
+        // Check Y value
+        if(_y + height >= texture.height){
+          // TODO: change texture size?
+          throw "Can't place PixelSprite outside the texture";
+        }
+      }
+    }
+    trace('found = ${found}; at (${rect.x}, ${rect.y}), size (${rect.w}, ${rect.h})');
+
+    sprites.push(rect);
+
     return rect;
   }
 
@@ -122,10 +180,6 @@ class PixelSprite extends Component
     saturation      = (_options.saturation == null) ? 0.5 : _options.saturation;
 
     data = new Array<Int>();
-
-    pixelsInt = new Array<Int>();
-    pixelsIntSplit = new Array<Int>();
-
 
     pixelsData2D = new Array<Array<Color>>();
     for(i in 0...height)
@@ -508,28 +562,13 @@ class PixelSprite extends Component
 
   function render():Void
   {
-      // First, get all pixels to 1D array
-    for (i in 0...pixelsData2D.length)
-    {
-      for (j in 0...pixelsData2D[i].length)
-      {
-        pixelsIntSplit.push( Math.round(pixelsData2D[i][j].r*0xff) );
-        pixelsIntSplit.push( Math.round(pixelsData2D[i][j].g*0xff) );
-        pixelsIntSplit.push( Math.round(pixelsData2D[i][j].b*0xff) );
-        pixelsIntSplit.push( Math.round(pixelsData2D[i][j].a*0xff) );
-      }
-    };
-
-      // Now pass it over to Uint8Array thing
-    pixelsUInt8 = new Uint8Array(pixelsIntSplit);
-    pixelsUInt8.set(pixelsIntSplit);
-
     // TODO: Isn't this cache:false the reason why Chrome runs slower?
     // Shouldn't I use one big texture for all PSG,
     // instead of new texture per new sprite?
-    PixelSprite.addPixels(pixelsUInt8, width, height);
 
-
+    // PixelSprite.addPixels(pixelsUInt8, width, height);
+    _sprite.texture = PixelSprite.texture;
+    _sprite.uv = PixelSprite.addPixels(pixelsData2D);
   }
 
 
